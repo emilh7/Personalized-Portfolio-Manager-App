@@ -1,0 +1,105 @@
+CREATE DATABASE InvestmentDB;
+USE InvestmentDB;
+
+CREATE TABLE User (
+	UserID INT NOT NULL PRIMARY KEY,
+	Name VARCHAR(100) NOT NULL,
+	Email VARCHAR(100) NOT NULL
+);
+CREATE TABLE Admin (
+	AdminID INT NOT NULL PRIMARY KEY
+);
+
+CREATE TABLE BankAccount (
+	AccountID INT NOT NULL PRIMARY KEY,
+	UserID INT NOT NULL,
+	Balance DECIMAL(15,2),
+	FOREIGN KEY (UserID) REFERENCES User(UserID)
+);
+
+CREATE TABLE ModerateActivity (
+	UserID INT NOT NULL,
+	AdminID INT NOT NULL,
+	PRIMARY KEY (UserID, AdminID),
+	FOREIGN KEY (UserID) REFERENCES User(UserID),
+	FOREIGN KEY (AdminID) REFERENCES Admin(AdminID)
+);
+
+CREATE TABLE Portfolio (
+	PortfolioID INT NOT NULL PRIMARY KEY,
+	Balance DECIMAL(15,2)
+);
+
+CREATE TABLE Transaction (
+	TransactionID INT NOT NULL PRIMARY KEY,
+	Amount DECIMAL(15,2) NOT NULL,
+	Type VARCHAR(50) NOT NULL,
+	PortfolioID INT NOT NULL,
+	FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID)
+);
+
+CREATE TABLE Buy (
+	TransactionID INT NOT NULL PRIMARY KEY,
+	AccountID INT NOT NULL,
+	FOREIGN KEY (TransactionID) REFERENCES Transaction(TransactionID),
+	FOREIGN KEY (AccountID) REFERENCES BankAccount(AccountID)
+);
+
+
+CREATE TABLE Sell (
+	TransactionID INT NOT NULL PRIMARY KEY,
+	AccountID NOT NULL INT,
+	FOREIGN KEY (TransactionID) REFERENCES Transaction(TransactionID),
+	FOREIGN KEY (AccountID) REFERENCES BankAccount(AccountID)
+);
+
+CREATE TABLE Assets (
+	AssetID INT NOT NULL PRIMARY KEY,
+	AssetType NOT NULL VARCHAR(50),
+	AssetName NOT NULL VARCHAR(100),
+	MarketValue NOT NULL DECIMAL(15,2),
+	PortfolioID NOT NULL INT,
+	Quantity NOT NULL INT,
+	FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID)
+);
+
+CREATE TABLE Commodities (
+	AssetID INT NOT NULL PRIMARY KEY,
+	FOREIGN KEY (AssetID) REFERENCES Assets(AssetID)
+);
+
+CREATE TABLE Bonds (
+	AssetID INT NOT NULL PRIMARY KEY,
+	FOREIGN KEY (AssetID) REFERENCES Assets(AssetID)
+);
+
+CREATE TABLE StocksCompany (
+	AssetID INT NOT NULL PRIMARY KEY,
+	FOREIGN KEY (AssetID) REFERENCES Assets(AssetID)
+);
+
+CREATE TABLE PerformanceChart (
+	AssetID NOT NULL INT,
+	MetricType VARCHAR(50),
+	Timeframe VARCHAR(50),
+	PortfolioID NOT NULL INT,
+	PRIMARY KEY (AssetID, MetricType, Timeframe, PortfolioID),
+	FOREIGN KEY (AssetID) REFERENCES Assets(AssetID),
+	FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID)
+);
+
+CREATE TABLE List (
+	AssetID NOT NULL INT,
+	AdminID NOT NULL INT,
+	PRIMARY KEY (AssetID, AdminID),
+	FOREIGN KEY (AssetID) REFERENCES Assets(AssetID),
+	FOREIGN KEY (AdminID) REFERENCES Admin(AdminID)
+);
+
+CREATE TABLE HasInfo (
+	AssetID NOT NULL INT,
+	PortfolioID NOT NULL INT,
+	PRIMARY KEY (AssetID, PortfolioID),
+	FOREIGN KEY (AssetID) REFERENCES Assets(AssetID),
+	FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID)
+);
