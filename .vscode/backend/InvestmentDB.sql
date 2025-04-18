@@ -79,13 +79,11 @@ CREATE TABLE StocksCompany (
 );
 
 CREATE TABLE PerformanceChart (
-	AssetID INT NOT NULL ,
-	MetricType VARCHAR(50),
-	Timeframe VARCHAR(50),
-	PortfolioID INT NOT NULL ,
-	PRIMARY KEY (AssetID, MetricType, Timeframe, PortfolioID),
-	FOREIGN KEY (AssetID) REFERENCES Assets(AssetID),
-	FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID)
+    ChartID INT AUTO_INCREMENT PRIMARY KEY,
+    AssetID INT NOT NULL,
+    MetricValue DECIMAL(15,4) NOT NULL,
+    Timestamp DATETIME NOT NULL,
+    FOREIGN KEY (AssetID) REFERENCES Assets(AssetID)
 );
 
 CREATE TABLE List (
@@ -168,4 +166,6 @@ INSERT INTO Bonds (AssetID) VALUES (9001);
 INSERT INTO Commodities (AssetID) VALUES (9002);
 
 
-
+INSERT INTO PerformanceChart (AssetID, MetricValue, Timestamp)
+VALUES
+(9003, 175.25, '2025-04-17 10:00:00');
