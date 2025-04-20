@@ -3,11 +3,13 @@ USE InvestmentDB;
 
 CREATE TABLE User (
 	UserID INT NOT NULL PRIMARY KEY,
-	Name VARCHAR(100) NOT NULL,
+	Pass INT NOT NULL,
 	Email VARCHAR(100) NOT NULL
 );
+
 CREATE TABLE Admin (
 	AdminID INT NOT NULL PRIMARY KEY
+	Pass INT NOT NULL;
 );
 
 CREATE TABLE BankAccount (
@@ -102,19 +104,21 @@ CREATE TABLE HasInfo (
 	FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID)
 );
 
-INSERT INTO User (UserID, Name, Email) VALUES
-(1, 'Alice Smith', 'alice@example.com'),
-(2, 'Bob Johnson', 'bob@example.com'),
-(3, 'Carol Lee', 'carol@example.com'),
-(4, 'David Chen', 'david@example.com'),
-(5, 'Eva Martin', 'eva@example.com');
+INSERT INTO User (UserID, Email, Pass) VALUES
+(1, 'alice@example.com', 1234),
+(2, 'bob@example.com', 1234),
+(3, 'carol@example.com', 1234),
+(4, 'david@example.com' ,1234),
+(5, 'eva@example.com', 1234);
 
-INSERT INTO Admin (AdminID) VALUES
-(101),
-(102),
-(103),
-(104),
-(105);
+INSERT INTO Admin (AdminID, Pass) VALUES
+(101, 4321),
+(102, 4321),
+(103, 4321),
+(104, 4321),
+(105, 4321);
+
+SELECT * FROM Admin
 
 INSERT INTO BankAccount (AccountID, UserID, Balance) VALUES
 (5001, 1, 10000.00),
@@ -169,3 +173,12 @@ INSERT INTO Commodities (AssetID) VALUES (9002);
 INSERT INTO PerformanceChart (AssetID, MetricValue, Timestamp)
 VALUES
 (9003, 175.25, '2025-04-17 10:00:00');
+
+INSERT INTO List (AssetID, AdminID) VALUES
+(9001, 101),
+(9002, 101),
+(9003, 101),
+(9004, 101),
+(9005, 101),
+(9006, 101);
+
