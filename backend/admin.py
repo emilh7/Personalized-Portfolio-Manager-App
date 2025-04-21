@@ -2,16 +2,27 @@ import mysql.connector
 
 from config import config
 
-#TODO: cursor should not be made outside of a function
-conn = mysql.connector.connect(**config)
-cursor = conn.cursor()
 
-def list_asset():
+def list_asset(type, name, start_value):
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
     #TODO: must add asset to assets table and record it in lists table
+    
+    cursor.execute("SELECT MAX(AssetID) AS MaxAssetID FROM Assets")
+    print(cursor)
+
+    for (id) in cursor:
+        print(id)
+
     return
 
-def delist_asset():
+def delist_asset(id):
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
     #TODO: must remove asset from assets table (and unrecord it from lists table?)
+
     return
 
 #TODO: Moderate activity relation
@@ -23,11 +34,20 @@ if __name__ == "__main__":
             inp = input("1 - list asset, 2 - delist asset, 3 - moderate activity")
 
             if inp == '1':
-                list_asset()
+                type = input("type: ")
+                name = input("name: ")
+                start_value = input("start value: ")
+
+                list_asset(type, name, start_value)
+
             elif inp == '2':
-                delist_asset()
+                id = input("asset id: ")
+
+                delist_asset(id)
+
             elif inp == '3':
                 print("hi")
+
             else:
                 print("not valid")
                 
