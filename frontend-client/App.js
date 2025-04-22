@@ -60,6 +60,20 @@ export default function App() {
             headerBackTitleVisible: false
           }}
         />
+        {/*Transaction Screen (Buying and Selling)*/}
+        <Stack.Screen 
+          name="Transaction" 
+          component={require('./screens/TransactionScreen').default}
+          options={{
+            title: 'Trade Assets',
+            headerTitleStyle: {
+              fontFamily: 'Lobster-Regular',
+              fontSize: 20,
+            },
+            headerBackTitleVisible: false,
+          }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
