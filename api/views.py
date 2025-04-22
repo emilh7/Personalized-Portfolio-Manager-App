@@ -160,10 +160,16 @@ def register(request):
 def get_account_balance(request):
     """Return account balance of user"""
 
+    userid = request.query_params.get('userid')
+    try:
+        userid = int(userid)
+    except:
+        return Response({
+        'balance': '0.00'
+    })
+
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
-
-    userid = 1 #TODO: temporary, frontend should send query param specifying userid
 
     query = "SELECT Balance FROM BankAccount WHERE UserID = " + userid
     cursor.execute(query)
@@ -180,7 +186,13 @@ def get_account_balance(request):
 def get_holdings(request):
     """Return asset holdings of user"""
 
-    userid = 1 #TODO: temporary, frontend should send query param specifying userid
+    userid = request.query_params.get('userid')
+    try:
+        userid = int(userid)
+    except:
+        return Response({
+        'balance': '0.00'
+    })
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
