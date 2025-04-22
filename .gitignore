@@ -35,3 +35,5 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+api/config.py
+cpsc471project/secretkey.py
