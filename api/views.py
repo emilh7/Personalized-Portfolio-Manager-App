@@ -79,4 +79,29 @@ def check_login(request):
         'isuser': username_valid,
         'isadmin': admin_valid
     })
+
+#TODO: balance info
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+
+def get_account_balance(request):
+    """Return account balance of user"""
+
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    userid = 1 #TODO: temporary, frontend should send query param specifying userid
+
+    query = "SELECT Balance FROM BankAccount WHERE UserID = " + userid
+    cursor.execute(query)
+
+    balance = cursor.fetchone()
+    print(balance)
+
+    return Response({
+        'balance': str(balance)
+    })
+
+#TODO: asset holdings
+
 #TODO: assets
