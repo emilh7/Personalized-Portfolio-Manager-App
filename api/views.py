@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 #from .models import User
 #from .serializers import UserSerializer
+from .user import buy_asset, sell_asset
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 
@@ -179,3 +180,39 @@ def get_account_balance(request):
 #TODO: asset holdings
 
 #TODO: assets
+
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def api_buy_asset(request):
+    try:
+        data = request.data
+        user_id = int(data.get('user_id'))
+        account_id = int(data.get('account_id'))
+        portfolio_id = int(data.get('portfolio_id'))
+        asset_id = int(data.get('asset_id'))
+        quantity = int(data.get('quantity'))
+
+        buy_asset(user_id, account_id, portfolio_id, asset_id, quantity)
+        return Response({'success': True})
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def api_sell_asset(request):
+    try:
+        data = request.data
+        user_id = int(data.get('user_id'))
+        account_id = int(data.get('account_id'))
+        portfolio_id = int(data.get('portfolio_id'))
+        asset_id = int(data.get('asset_id'))
+        quantity = int(data.get('quantity'))
+
+        sell_asset(user_id, account_id, portfolio_id, asset_id, quantity)
+        return Response({'success': True})
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
