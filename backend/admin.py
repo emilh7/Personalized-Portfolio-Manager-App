@@ -3,9 +3,52 @@ import mysql.connector
 config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'PASSWORD',
+    'password': '904134002',
     'database': 'InvestmentDB'
 }
+
+def remove_user(user_id):
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    try:
+        # 1) Remove any moderation links for this user
+        cursor.execute(
+            "DELETE FROM ModerateActivity WHERE UserID = %s",
+            (user_id,)
+        )
+
+        # 2) Find and delete all bank‑account‑related records
+        cursor.execute(
+            "SELECT AccountID FROM BankAccount WHERE UserID = %s",
+            (user_id,)
+        )
+        accounts = cursor.fetchall()
+        for (acct_id,) in accounts:
+            # delete any buys/sells on that account
+            cursor.execute("DELETE FROM Buy  WHERE AccountID = %s", (acct_id,))
+            cursor.execute("DELETE FROM Sell WHERE AccountID = %s", (acct_id,))
+
+        # 3) Delete the user’s bank accounts
+        cursor.execute(
+            "DELETE FROM BankAccount WHERE UserID = %s",
+            (user_id,)
+        )
+
+        # 4) Finally delete the user record
+        cursor.execute(
+            "DELETE FROM User WHERE UserID = %s",
+            (user_id,)
+        )
+
+        conn.commit()
+        print(f"Successfully removed user {user_id} and all related data.")
+    except mysql.connector.Error as err:
+        conn.rollback()
+        print(f"Failed to remove user {user_id}: {err}")
+    finally:
+        cursor.close()
+        conn.close()
 
 def list_asset(asset_id, asset_type, name, start_price):
     portfolio_id = 3001   # default master portfolio
@@ -29,7 +72,7 @@ def list_asset(asset_id, asset_type, name, start_price):
         """, (asset_id, admin_id))
 
         conn.commit()
-        print(f"✅ Asset '{name}' (ID: {asset_id}, Type: {asset_type}) listed successfully by Admin {admin_id}.")
+        print(f"Asset '{name}' (ID: {asset_id}, Type: {asset_type}) listed successfully by Admin {admin_id}.")
 
     except mysql.connector.Error as err:
         print(f"MySQL Error: {err}")
@@ -53,8 +96,6 @@ def delist_asset(asset_id):
     finally:
         cursor.close()
         conn.close()
-
-# TODO: Moderate activity relation
 
 if __name__ == "__main__": 
 
@@ -82,7 +123,8 @@ if __name__ == "__main__":
                 delist_asset(asset_id)
 
             elif inp == '3':
-                print("Feature not implemented yet.")
+                uid = input("User ID to remove: ")
+                remove_user(uid)
 
             else:
                 print("Exiting program.")
