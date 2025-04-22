@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
-#    'corsheaders',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -51,8 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-#    'corsheaders.middleware.CorsMiddleware',
-#    'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'cpsc471project.urls'
@@ -96,9 +96,9 @@ REST_FRAMEWORK = {
     ],
 }
 
-#CORS_ALLOWED_ORIGINS = [
-#    'http://localhost:8081',
-#]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8081',
+]
 
 
 # Password validation

@@ -52,9 +52,9 @@ def check_login(request):
         if username == AdminID and password == Password:
             admin_valid = True
 
-    res = f'{ "isuser":"{username_valid}", "isadmin":"{admin_valid}" }'
+    res = f'"isuser":"{username_valid}", "isadmin":"{admin_valid}"'
 
-    result = json.loads(res)
+    res = '{' + res + '}'
 
-    return Response(result)
+    return Response(res)
 #TODO: assets
