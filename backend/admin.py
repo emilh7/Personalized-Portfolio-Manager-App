@@ -32,7 +32,7 @@ def list_asset(asset_id, asset_type, name, start_price):
         print(f"✅ Asset '{name}' (ID: {asset_id}, Type: {asset_type}) listed successfully by Admin {admin_id}.")
 
     except mysql.connector.Error as err:
-        print(f"❌ MySQL Error: {err}")
+        print(f"MySQL Error: {err}")
 
     finally:
         cursor.close()
@@ -47,9 +47,9 @@ def delist_asset(asset_id):
         cursor.execute("DELETE FROM List WHERE AssetID = %s", (asset_id,))
         cursor.execute("DELETE FROM Assets WHERE AssetID = %s", (asset_id,))
         conn.commit()
-        print(f"✅ Asset {asset_id} delisted and removed.")
+        print(f"Asset {asset_id} delisted and removed.")
     except Exception as e:
-        print(f"❌ Error while delisting asset: {e}")
+        print(f"Error while delisting asset: {e}")
     finally:
         cursor.close()
         conn.close()
@@ -82,8 +82,8 @@ if __name__ == "__main__":
                 delist_asset(asset_id)
 
             elif inp == '3':
-                print("👀 Feature not implemented yet.")
+                print("Feature not implemented yet.")
 
             else:
-                print("🛑 Exiting program.")
+                print("Exiting program.")
                 break
