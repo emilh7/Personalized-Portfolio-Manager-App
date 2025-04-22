@@ -40,16 +40,16 @@ async function check_login(username, password) {
   });*/
   console.log(username)
   console.log(password)
-  const {data: res} = await axios.get("http://localhost:8000/api/check_login/", {
-    params: {
-      username: username,
-      password: password
-    }
-  });
+  
+  const { data } = await axios.get(
+    'http://localhost:8000/api/check_login/',
+    { params: { username, password } }
+  );
 
-  console.log(res);
+  console.log(data); // log the parsed data object
 
-  const data = JSON.parse(res);
+
+  //const data = JSON.parse(res);
 
   console.log(data.isuser);
   console.log(typeof(data.isuser));
@@ -65,7 +65,7 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
       Alert.alert('Error', 'Please enter both username and password');
       return;
@@ -75,23 +75,23 @@ export default function LoginScreen({ navigation }) {
     // Simulate API call
     
     //const {value: res} = check_login()
-    check_login(username, password)
-    .then((value) => {
-      console.log(value.isuser);
-      console.log(value.isadmin);
+    // check_login(username, password)
+    // .then((value) => {
+    //   console.log(value.isuser);
+    //   console.log(value.isadmin);
 
-      setTimeout(() => {
-        setLoading(false);
+    //   setTimeout(() => {
+    //     setLoading(false);
   
-        //if (username === 'admin' && password === '1234') { //(res.isuser === 'True') {
-        if (value.isuser === 'True') {
-          navigation.navigate('Home');
-        } else {
-          Alert.alert('Login Failed', 'Invalid username or password');
-        }
-      }, 1500);
+    //     //if (username === 'admin' && password === '1234') { //(res.isuser === 'True') {
+    //     if (value.isuser === 'True') {
+    //       navigation.navigate('Home');
+    //     } else {
+    //       Alert.alert('Login Failed', 'Invalid username or password');
+    //     }
+    //   }, 1500);
       
-    })
+    // })
 
     //console.log(value)
     
@@ -108,6 +108,20 @@ export default function LoginScreen({ navigation }) {
       //  Alert.alert('Login Failed', 'Invalid username or password');
       //}
     //}, 1500);
+
+    try {
+      const { isuser, isadmin } = await check_login(username, password);
+      if (isuser) {
+        navigation.replace('Home');
+      } else {
+        Alert.alert('Login Failed', 'Invalid username or password');
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Could not connect to server');
+    } finally {
+      setLoading(false);
+    }
 
   };
 
