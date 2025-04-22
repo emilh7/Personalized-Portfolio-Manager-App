@@ -10,8 +10,55 @@ import {
   ScrollView,
 } from 'react-native';
 
+
 const phoneWidth = 393;
 const phoneHeight = 852;
+
+import axios, { AxiosResponse } from 'axios';
+
+async function check_login(username, password) {
+  /*const {data: res} = await axios ({
+    method: 'post',
+    url: "http://localhost:8000/api/check_login/?format=json",
+    withCredentials: false,
+    data: {
+      usern: username,
+      passw: password
+    }
+  })
+  .catch((error) => {
+    throw new Error("error");
+  });*/
+  /*const {data: res} = await axios ({
+    method: 'get',
+    url: "http://localhost:8000/api/check_login/",
+    withCredentials: false,
+    params: {
+      username: username,
+      password: password
+    }
+  });*/
+  console.log(username)
+  console.log(password)
+  const {data: res} = await axios.get("http://localhost:8000/api/check_login/", {
+    params: {
+      username: username,
+      password: password
+    }
+  });
+
+  console.log(res);
+
+  const data = JSON.parse(res);
+
+  console.log(data.isuser);
+  console.log(typeof(data.isuser));
+  console.log(data.isadmin);
+
+  return data; 
+}
+
+
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -24,14 +71,44 @@ export default function LoginScreen({ navigation }) {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (username === 'admin' && password === '1234') {
-        navigation.navigate('Home');
-      } else {
-        Alert.alert('Login Failed', 'Invalid username or password');
-      }
-    }, 1500);
+
+    // Simulate API call
+    
+    //const {value: res} = check_login()
+    check_login(username, password)
+    .then((value) => {
+      console.log(value.isuser);
+      console.log(value.isadmin);
+
+      setTimeout(() => {
+        setLoading(false);
+  
+        //if (username === 'admin' && password === '1234') { //(res.isuser === 'True') {
+        if (value.isuser === 'True') {
+          navigation.navigate('Home');
+        } else {
+          Alert.alert('Login Failed', 'Invalid username or password');
+        }
+      }, 1500);
+      
+    })
+
+    //console.log(value)
+    
+    //setTimeout(() => {
+      //setLoading(false);
+
+      //console.log(res)
+      //console.log(res.isuser)
+      //console.log(typeof(res.isuser))
+
+      //if (username === 'admin' && password === '1234') { //(res.isuser === 'True') {
+      //  navigation.navigate('Home');
+      //} else {
+      //  Alert.alert('Login Failed', 'Invalid username or password');
+      //}
+    //}, 1500);
+
   };
 
   return (
