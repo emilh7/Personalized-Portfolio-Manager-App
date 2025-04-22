@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  Button, 
-  StyleSheet, 
-  Alert, 
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
   Image,
-  Dimensions,
-  ScrollView
+  ScrollView,
 } from 'react-native';
+
+const phoneWidth = 393;
+const phoneHeight = 852;
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -21,9 +23,7 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Error', 'Please enter both username and password');
       return;
     }
-
     setLoading(true);
-    // Simulate API call
     setTimeout(() => {
       setLoading(false);
       if (username === 'admin' && password === '1234') {
@@ -35,87 +35,91 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <ScrollView 
-      contentContainerStyle={styles.scrollContainer}
-      keyboardShouldPersistTaps="handled"
-    >
-      <View style={styles.phoneContainer}>
-        {/* App Logo */}
-        <Image
-          source={require('../assets/icon.png')} // NEEDS TO BE UPDATED TO CURRENT LOGO
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        
-        <Text style={styles.title}>Login</Text>
-        
-        <TextInput
-          placeholder="Username"
-          style={styles.input}
-          value={username}
-          onChangeText={setUsername}
-          autoCapitalize="none"
-        />
-        
-        <TextInput
-          placeholder="Password"
-          style={styles.input}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        
-        <View style={styles.buttonContainer}>
-          <Button 
-            title="Login" 
-            onPress={handleLogin} 
-            disabled={loading}
+    <View style={styles.phoneFrame}>
+      <View style={styles.phoneScreen}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Image
+            source={require('../assets/icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
           />
-        </View>
 
-        <View style={styles.linksContainer}>
-          <Text 
-            style={styles.linkText}
-            onPress={() => navigation.navigate('ForgotPassword')}
-          >
-            Forgot Password?
-          </Text>
-          
-          <Text 
-            style={styles.linkText}
-            onPress={() => navigation.navigate('Register')}
-          >
-            Don't have an account? Sign Up
-          </Text>
-        </View>
+          <Text style={styles.title}>Login</Text>
+
+          <TextInput
+            placeholder="Username"
+            style={styles.input}
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+          />
+
+          <TextInput
+            placeholder="Password"
+            style={styles.input}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Login"
+              onPress={handleLogin}
+              disabled={loading}
+            />
+          </View>
+
+          <View style={styles.linksContainer}>
+            <Text
+              style={styles.linkText}
+              onPress={() => navigation.navigate('ForgotPassword')}
+            >
+              Forgot Password?
+            </Text>
+
+            <Text
+              style={styles.linkText}
+              onPress={() => navigation.navigate('Register')}
+            >
+              Don't have an account? Sign Up
+            </Text>
+          </View>
+        </ScrollView>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
-const windowWidth = Dimensions.get('window').width;
-const phoneWidth = Math.min(windowWidth * 0.9, 400); // Max width 400px
-
 const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
+  phoneFrame: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 20,
+    padding: 20,
   },
-  phoneContainer: {
+  phoneScreen: {
     width: phoneWidth,
+    height: phoneHeight,
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 30,
+    borderRadius: 40,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
+    shadowRadius: 20,
+    elevation: 10,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    padding: 30,
+    justifyContent: 'center',  // or 'flex-start' if you want to start at top
   },
   logo: {
     width: '100%',

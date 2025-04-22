@@ -78,7 +78,6 @@ export default function HomeScreen({ navigation }) {
 }
 
 // constant dimensions for demo
-const { width, height } = Dimensions.get('window');
 const phoneWidth = 393; 
 const phoneHeight = 852; 
 

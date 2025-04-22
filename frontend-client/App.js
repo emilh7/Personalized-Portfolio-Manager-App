@@ -5,8 +5,9 @@ import { useFonts, Lobster_400Regular } from '@expo-google-fonts/lobster';
 import { View, Text } from 'react-native';
 
 import LoginScreen from './screens/LoginScreen';
+import RegistrationScreen from './screens/RegistrationScreen';
 import HomeScreen from './screens/HomeScreen';
-import FundsManagementScreen from './screens/FundsManagementScreen'; 
+import FundsManagementScreen from './screens/FundsManagementScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,25 +27,37 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
+        {/* Authentication Screens */}
         <Stack.Screen 
           name="Login" 
           component={LoginScreen} 
           options={{ headerShown: false }} 
         />
+        
+        <Stack.Screen 
+          name="Register" 
+          component={RegistrationScreen}
+          options={{ headerShown: false }}
+        />
+        
+        {/* Main App Screens */}
         <Stack.Screen 
           name="Home" 
           component={HomeScreen}
           options={{ headerShown: false }} 
         />
+        
+        {/* Financial Management Screens */}
         <Stack.Screen 
           name="FundsManagement" 
-          component={FundsManagementScreen} 
+          component={FundsManagementScreen}
           options={{ 
             title: 'Manage Funds',
             headerTitleStyle: {
               fontFamily: 'Lobster-Regular',
               fontSize: 20,
-            }
+            },
+            headerBackTitleVisible: false
           }}
         />
       </Stack.Navigator>
