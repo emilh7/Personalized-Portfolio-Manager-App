@@ -41,9 +41,9 @@ async function check_login(username, password) {
   console.log(username)
   console.log(password)
   
-  const { data } = await axios.get(
+  const { data } = await axios.post(
     'http://localhost:8000/api/check_login/',
-    { params: { username, password } }
+    { username, password }
   );
 
   console.log(data); // log the parsed data object
