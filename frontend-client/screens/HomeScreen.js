@@ -3,18 +3,32 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from
 
 async function get_balance(userid) {
   const { data } = await axios.get(
-      'http://localhost:8000/api/check_login/',
-      { params: { username, password } }
-    );
+    'http://localhost:8000/api/get_account_balance/',
+    { params: { userid } }
+  );
+
+  console.log(data)
+  return data
 }
 
 export default function HomeScreen({ navigation }) {
   // Mock data
+  const usrbalance = async () => {
+    try {
+      const {balance} = await get_balance(1)
+      console.log(balance)
+
+      return balance
+  
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Could not connect to server');
+    }
+  };
+
   const portfolioData = {
 
-
-
-    //balance: "$12,450.00",
+    balance: "$12,050.00",
     totalAssets: "$56,780.00",
     assets: [
       { name: "Stocks", value: "$32,450.00", change: "+2.4%" },

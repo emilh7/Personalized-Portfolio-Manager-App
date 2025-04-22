@@ -155,10 +155,8 @@ def register(request):
         'isadmin': admin_valid
     })
 
-#TODO: balance info
 @api_view(['GET'])
 @renderer_classes([JSONRenderer])
-
 def get_account_balance(request):
     """Return account balance of user"""
 
@@ -177,9 +175,48 @@ def get_account_balance(request):
         'balance': str(balance)
     })
 
-#TODO: asset holdings
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+def get_holdings(request):
+    """Return asset holdings of user"""
 
-#TODO: assets
+    userid = 1 #TODO: temporary, frontend should send query param specifying userid
+
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    cursor.execute("""SELECT AccountID
+                FROM BankAccount
+                WHERE UserID = %s""", ([userid]))
+
+    accid = 0
+
+    for c in cursor:
+        accid = c[0]
+
+    transid = 0
+    cursor.execute("""SELECT Buy.TransactionID
+                FROM Buy
+                WHERE AccountID = %s""", ([accid]))
+    for c in cursor:
+        transid = c[0]
+
+    cursor.execute("""SELECT Sell.TransactionID
+                FROM Sell
+                WHERE AccountID = %s""", ([accid]))
+    for c in cursor:
+        transid = c[0]
+
+    cursor.execute("""SELECT po.balance 
+                FROM Portfolio as po, Transaction as tr
+                WHERE tr.TransactionID = %s
+                and tr.PortfolioID = po.PortfolioID""", ([transid]))
+    for c in cursor:
+        port_balance = c[0]
+
+    return Response({
+        'balance': port_balance
+    })
 
 @csrf_exempt
 @api_view(['POST'])
