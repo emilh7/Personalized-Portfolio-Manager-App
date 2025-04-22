@@ -13,12 +13,37 @@ import {
 
 import axios, { AxiosResponse } from 'axios';
 
-async function check_login() {
-  const {data: res} = await axios ({
-    method: 'get',
+async function check_login(username, password) {
+  /*const {data: res} = await axios ({
+    method: 'post',
     url: "http://localhost:8000/api/check_login/?format=json",
     withCredentials: false,
+    data: {
+      usern: username,
+      passw: password
+    }
+  })
+  .catch((error) => {
+    throw new Error("error");
+  });*/
+  /*const {data: res} = await axios ({
+    method: 'get',
+    url: "http://localhost:8000/api/check_login/",
+    withCredentials: false,
+    params: {
+      username: username,
+      password: password
+    }
+  });*/
+  console.log(username)
+  console.log(password)
+  const {data: res} = await axios.get("http://localhost:8000/api/check_login/", {
+    params: {
+      username: username,
+      password: password
+    }
   });
+
   console.log(res);
 
   const data = JSON.parse(res);
@@ -46,7 +71,7 @@ export default function LoginScreen({ navigation }) {
     // Simulate API call
     
     //const {value: res} = check_login()
-    check_login()
+    check_login(username, password)
     .then((value) => {
       console.log(value.isuser);
       console.log(value.isadmin);

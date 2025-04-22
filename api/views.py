@@ -28,14 +28,34 @@ from .config import config
     
     
 #TODO: login, check admin and user login info
-@api_view(('GET',))
+@api_view(('GET', 'POST'))
 @renderer_classes((TemplateHTMLRenderer, JSONRenderer))
 def check_login(request):
+
+    if request.method == 'POST':
+        res = f'"isuser":"False", "isadmin":"False"'
+        res = '{' + res + '}'
+        return Response(res)
+
+
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
 
-    username = 1
-    password = 1234
+    print(request)
+
+    print(request.query_params)
+    print(request.query_params.items)
+    username = request.query_params.get('username')
+    password = request.query_params.get('password')
+
+    try:
+        username = int(username)
+        password = int(password)
+    except ValueError:
+        res = f'"isuser":"False", "isadmin":"False"'
+        res = '{' + res + '}'
+        return Response(res)
+
 
     cursor.execute("SELECT UserID, Pass FROM User")
 
