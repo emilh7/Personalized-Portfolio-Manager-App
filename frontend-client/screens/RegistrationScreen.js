@@ -10,6 +10,16 @@ import {
   Dimensions
 } from 'react-native';
 
+import axios from 'axios';
+
+async function registerApi({ username, email, password, password2 }) {
+  const { data } = await axios.post(
+    'http://localhost:8000/api/register/',
+    { username, email, password, password2 }
+  );
+  return data; // { success: true } or { error: "..." }
+}
+
 export default function RegistrationScreen({ navigation }) {
   const [formData, setFormData] = useState({
     username: '',
@@ -27,7 +37,29 @@ export default function RegistrationScreen({ navigation }) {
   };
 
   const handleSubmit = async () => {
-    console.log("Does nothing right now"); 
+    const { username, email, password1, password2 } = formData;
+    if (!username||!email||!password1||!password2) {
+      return Alert.alert('Error','All fields required');
+    }
+    setLoading(true);
+    try {
+      const res = await registerApi({
+        username, email,
+        password: password1,
+        password2
+      });
+      if (res.success) {
+        Alert.alert('Success','Account created');
+        navigation.replace('Login');
+      } else {
+        Alert.alert('Registration Failed', res.error || 'Unknown error');
+      }
+    } catch (err) {
+      console.warn(err.response?.data);
+      Alert.alert('Error','Could not reach server');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
