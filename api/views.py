@@ -134,4 +134,48 @@ def register(request):
         status=status.HTTP_201_CREATED
     )
 
+    cursor.execute("SELECT UserID, Pass FROM User")
+
+    username_valid = False
+    admin_valid = False
+
+    for (UserID, Password) in cursor:
+        if username == UserID and password == Password:
+            username_valid = True
+
+    cursor.execute("SELECT AdminID, Pass FROM Admin")
+
+    for (AdminID, Password) in cursor:
+        if username == AdminID and password == Password:
+            admin_valid = True
+
+    return Response({  # EDITED: directly return boolean values
+        'isuser': username_valid,
+        'isadmin': admin_valid
+    })
+
+#TODO: balance info
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+
+def get_account_balance(request):
+    """Return account balance of user"""
+
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    userid = 1 #TODO: temporary, frontend should send query param specifying userid
+
+    query = "SELECT Balance FROM BankAccount WHERE UserID = " + userid
+    cursor.execute(query)
+
+    balance = cursor.fetchone()
+    print(balance)
+
+    return Response({
+        'balance': str(balance)
+    })
+
+#TODO: asset holdings
+
 #TODO: assets

@@ -1,10 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 
+async function get_balance(userid) {
+  const { data } = await axios.get(
+      'http://localhost:8000/api/check_login/',
+      { params: { username, password } }
+    );
+}
+
 export default function HomeScreen({ navigation }) {
   // Mock data
   const portfolioData = {
-    balance: "$12,450.00",
+
+
+
+    //balance: "$12,450.00",
     totalAssets: "$56,780.00",
     assets: [
       { name: "Stocks", value: "$32,450.00", change: "+2.4%" },

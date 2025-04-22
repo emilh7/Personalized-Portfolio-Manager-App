@@ -135,8 +135,6 @@ INSERT INTO Admin (AdminID, Pass) VALUES
 (104, 4321),
 (105, 4321);
 
-SELECT * FROM Admin;
-
 INSERT INTO BankAccount (AccountID, UserID, Balance) VALUES
 (5001, 1, 10000.00),
 (5002, 2, 7500.00),
@@ -152,11 +150,11 @@ INSERT INTO ModerateActivity (UserID, AdminID) VALUES
 (5, 105);
 
 INSERT INTO Portfolio (PortfolioID, Balance) VALUES
-(3001, 20000.00),
-(3002, 15000.00),
-(3003, 17000.00),
-(3004, 9500.00),
-(3005, 13400.00);
+(3001, 3505.00),
+(3002, 45758.75),
+(3003, 5000.00),
+(3004, 6000.00),
+(3005, 5763.60);
 
 INSERT INTO Transaction (TransactionID, Amount, Type, PortfolioID) VALUES
 (8001, 3500.00, 'Buy', 3001),
@@ -198,4 +196,3 @@ INSERT INTO List (AssetID, AdminID) VALUES
 (9004, 101),
 (9005, 101),
 (9006, 101);
-
