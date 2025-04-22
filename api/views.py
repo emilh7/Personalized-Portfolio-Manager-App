@@ -28,15 +28,17 @@ from .config import config
     
     
 #TODO: login, check admin and user login info
-@api_view(('GET', 'POST'))
-@renderer_classes((TemplateHTMLRenderer, JSONRenderer))
+
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+
 def check_login(request):
 
     if request.method == 'POST':
-        res = f'"isuser":"False", "isadmin":"False"'
-        res = '{' + res + '}'
-        return Response(res)
-
+        return Response({  # EDITED: return dict instead of raw string
+            'isuser': False,
+            'isadmin': False
+        })
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
@@ -51,10 +53,11 @@ def check_login(request):
     try:
         username = int(username)
         password = int(password)
-    except ValueError:
-        res = f'"isuser":"False", "isadmin":"False"'
-        res = '{' + res + '}'
-        return Response(res)
+    except (ValueError, TypeError):
+        return Response({  # EDITED: return dict on parse failure
+            'isuser': False,
+            'isadmin': False
+        })
 
 
     cursor.execute("SELECT UserID, Pass FROM User")
@@ -72,9 +75,8 @@ def check_login(request):
         if username == AdminID and password == Password:
             admin_valid = True
 
-    res = f'"isuser":"{username_valid}", "isadmin":"{admin_valid}"'
-
-    res = '{' + res + '}'
-
-    return Response(res)
+    return Response({  # EDITED: directly return boolean values
+        'isuser': username_valid,
+        'isadmin': admin_valid
+    })
 #TODO: assets
