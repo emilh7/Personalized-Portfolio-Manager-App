@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-export default function FundsManagementScreen({ navigation, route }) {
+export default function FundsManagementScreen({ navigation }) {
   const [amount, setAmount] = useState('');
   const [action, setAction] = useState('add'); // 'add' or 'remove'
+  const [balance, setBalance] = useState(null);
 
-  // TODO: Replace with actual balance from Django backend
-  const currentBalance = "$12,450.00";
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const userID = await AsyncStorage.getItem('userID');
+        const { data } = await axios.get('http://localhost:8000/api/get_account_balance/', {
+          params: { userid: userID },
+        });
+        setBalance(data.balance);
+      } catch (err) {
+        console.error('Balance fetch error:', err);
+      }
+    };
+    fetchBalance();
+  }, []);
 
   const handleTransaction = () => {
     const numericAmount = parseFloat(amount);
@@ -16,8 +31,8 @@ export default function FundsManagementScreen({ navigation, route }) {
     }
 
     console.log(`${action === 'add' ? 'Adding' : 'Removing'} $${numericAmount}`);
-    navigation.navigate('Home', { 
-      updatedBalance: action === 'add' ? numericAmount : -numericAmount 
+    navigation.navigate('Home', {
+      updatedBalance: action === 'add' ? numericAmount : -numericAmount
     });
   };
 
@@ -34,7 +49,9 @@ export default function FundsManagementScreen({ navigation, route }) {
           {/* Balance Display */}
           <View style={styles.balanceCard}>
             <Text style={styles.cardLabel}>Available Balance</Text>
-            <Text style={styles.balanceText}>{currentBalance}</Text>
+            <Text style={styles.balanceText}>
+              {balance !== null ? `$${parseFloat(balance).toFixed(2)}` : 'Loading...'}
+            </Text>
           </View>
 
           {/* Toggle Tabs */}
@@ -63,8 +80,8 @@ export default function FundsManagementScreen({ navigation, route }) {
           />
 
           {/* Confirm Button */}
-          <TouchableOpacity 
-            style={[styles.confirmButton, action === 'add' ? styles.depositButton : styles.withdrawButton]} 
+          <TouchableOpacity
+            style={[styles.confirmButton, action === 'add' ? styles.depositButton : styles.withdrawButton]}
             onPress={handleTransaction}
           >
             <Text style={styles.buttonText}>
@@ -77,7 +94,6 @@ export default function FundsManagementScreen({ navigation, route }) {
   );
 }
 
-// constant dimensions for demo
 const phoneWidth = 393;
 const phoneHeight = 852;
 
