@@ -146,30 +146,30 @@ def register(request):
 @renderer_classes([JSONRenderer])
 def get_account_balance(request):
     """Return account balance of user"""
+
     try:
         userid = int(request.query_params.get('userid'))
-    except (ValueError, TypeError):
+    except (TypeError, ValueError):
         return Response({'error': 'Invalid or missing userid'}, status=400)
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
 
-    try:
-        cursor.execute("SELECT Balance FROM BankAccount WHERE UserID = %s", (userid,))
-        result = cursor.fetchone()
+    cursor.execute("SELECT Balance FROM BankAccount WHERE UserID = %s", (userid,))
+    row = cursor.fetchone()
 
-        if result:
-            balance = float(result[0])
-        else:
-            balance = 0.00
+    cursor.close()
+    conn.close()
 
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
-    finally:
-        cursor.close()
-        conn.close()
+    if not row:
+        return Response({'error': 'User not found'}, status=404)
 
-    return Response({'balance': balance})
+    # Extract the numeric balance value
+    balance_value = float(row[0])  # convert Decimal to float
+
+    return Response({'balance': balance_value})
+
+
 
 
 
