@@ -14,7 +14,7 @@ export default function HomeScreen({ navigation }) {
 
 
 
-    //balance: "$12,450.00",
+    balance: "$12,450.00",
     totalAssets: "$56,780.00",
     assets: [
       { name: "Stocks", value: "$32,450.00", change: "+2.4%" },
