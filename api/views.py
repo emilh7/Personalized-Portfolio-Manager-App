@@ -148,22 +148,29 @@ def get_account_balance(request):
     """Return account balance of user"""
     try:
         userid = int(request.query_params.get('userid'))
-    except:
-        return Response({'balance': '0.00'})
+    except (ValueError, TypeError):
+        return Response({'error': 'Invalid or missing userid'}, status=400)
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT Balance FROM BankAccount WHERE UserID = %s", (userid,))
-    row = cursor.fetchone()
+    try:
+        cursor.execute("SELECT Balance FROM BankAccount WHERE UserID = %s", (userid,))
+        result = cursor.fetchone()
 
-    cursor.close()
-    conn.close()
+        if result:
+            balance = float(result[0])
+        else:
+            balance = 0.00
 
-    if not row:
-        return Response({'balance': '0.00'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+    finally:
+        cursor.close()
+        conn.close()
 
-    return Response({'balance': str(row[0])})
+    return Response({'balance': balance})
+
 
 
 @csrf_exempt
