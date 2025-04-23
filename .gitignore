@@ -39,3 +39,4 @@ api/config.py
 cpsc471project/secretkey.py
 cpsc471project/__pycache__/secretkey.cpython-311.pyc
 cpsc471project/__pycache__/secretkey.cpython-311.pyc
+backend/test.py
