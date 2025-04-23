@@ -4,6 +4,8 @@
 
 MySQL must be installed on your system and running.
 
+The database be created either by running `CREATE DATABASE InvestmentDB;` or by running 'backend/makedb.sql'. The values for this database are made by running all the queries in 'backend/InvestmentDB.sql'.
+
 If not already on your system, you will have to install multiple modules using pip and npm. They can be installed as follows,
 
 Python/Django modules:
