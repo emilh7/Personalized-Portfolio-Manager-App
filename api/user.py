@@ -1,18 +1,12 @@
 import mysql.connector
 from datetime import datetime
-
-config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '904134002',
-    'database': 'InvestmentDB'
-}
+from .config import config
 
 def register_user(email, password): # Default 20000 starting balance in bank accounts
     try:
         conn = mysql.connector.connect(**config)
         cursor = conn.cursor()
-
+    
         # Get next UserID
         cursor.execute("SELECT MAX(UserID) FROM User")
         max_user_id = cursor.fetchone()[0]
@@ -27,6 +21,11 @@ def register_user(email, password): # Default 20000 starting balance in bank acc
         cursor.execute("SELECT MAX(PortfolioID) FROM Portfolio")
         max_portfolio_id = cursor.fetchone()[0]
         portfolio_id = (max_portfolio_id) + 1
+
+        # Link PortfolioID to UserID
+        cursor.execute("""
+        INSERT INTO Portfolio (PortfolioID, Balance, UserID) 
+        VALUES (%s, %s, %s)""", (portfolio_id, 0.00, user_id))  
 
         # Insert into User table
         cursor.execute("""

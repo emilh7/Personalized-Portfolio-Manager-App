@@ -20,21 +20,16 @@ const phoneHeight = 852;
 import axios, { AxiosResponse } from 'axios';
 
 async function check_login(username, password) {
-  
-  console.log(username)
-  console.log(password)
-  
-  const { data } = await axios.post(
-    'http://localhost:8000/api/check_login/',
-    { username, password }
-  );
-
-  console.log(data); // log the parsed data object
-
-  console.log(data.isuser);
-  console.log(data.isadmin);
-
-  return data; 
+  try {
+    const response = await axios.post(
+      'http://localhost:8000/api/check_login/',
+      { username, password }
+    );
+    return response.data; // Return parsed API response
+  } catch (err) {
+    console.error('API call failed:', err);
+    throw err; // Propagate the error
+  }
 }
 
 
@@ -50,28 +45,30 @@ export default function LoginScreen({ navigation }) {
       return;
     }
     setLoading(true);
-
+  
     try {
-      const data = await check_login(username, password);
-      const { isuser, isadmin, userID } = data;
 
+      // Get the FULL response from check_login
+      const response = await check_login(username, password);
+      console.log('Login API Response:', response); // Check this in browser console
+      // Destructure values safely
+      const { isuser = false, userID = null } = response;
+  
       if (isuser) {
-        // Storing username and user ID in async storage
-        await AsyncStorage.setItem('userID', data.userID.toString()); // assuming Django sends this
-        await AsyncStorage.setItem('username', username);
-        navigation.replace('Home');
+        navigation.replace('Home', { 
+          userID: response.userID // Must match "route.params.userID"
+        });
 
       } else {
-        Alert.alert('Login Failed', 'Invalid username or password');
+        Alert.alert('Login Failed', 'Invalid credentials');
       }
     } catch (err) {
-      console.error(err);
-      Alert.alert('Error', 'Could not connect to server');
+      console.error('Login error:', err);
+      Alert.alert('Error', 'Login failed. Check console for details.');
     } finally {
       setLoading(false);
     }
-
-  };
+  };  
 
   return (
     <View style={styles.phoneFrame}>

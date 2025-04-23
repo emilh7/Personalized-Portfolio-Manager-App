@@ -4,9 +4,14 @@ import LogoutButton from '../components/LogoutButton';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function HomeScreen({ navigation }) {
-  const [balance, setBalance] = useState('$0.00');
 
+export default function HomeScreen({ navigation, route }) {
+  // Mock data
+  const usrbalance = async () => {
+    try {
+      const {balance} = await get_balance(1)
+      console.log(balance)
+      
   useEffect(() => {
     const fetchBalance = async () => {
       try {
@@ -16,6 +21,7 @@ export default function HomeScreen({ navigation }) {
         const { data } = await axios.get('http://localhost:8000/api/get_account_balance/', {
           params: { userid: userID }
         });
+
 
         setBalance(`$${parseFloat(data.balance).toFixed(2)}`);
       } catch (err) {
@@ -28,6 +34,7 @@ export default function HomeScreen({ navigation }) {
 
   const portfolioData = {
     balance: balance,
+
     totalAssets: "$56,780.00",
     assets: [
       { name: "Stocks", value: "$32,450.00", change: "+2.4%" },
@@ -79,7 +86,7 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => navigation.navigate('Transaction')}
+              onPress={() => navigation.navigate('Transaction', { userID: route.params.userID })}
             >
               <Text style={styles.buttonText}>Buy and Sell!</Text>
             </TouchableOpacity>
