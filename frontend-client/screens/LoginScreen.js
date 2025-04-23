@@ -32,7 +32,6 @@ async function check_login(username, password) {
   console.log(data); // log the parsed data object
 
   console.log(data.isuser);
-  console.log(typeof(data.isuser));
   console.log(data.isadmin);
 
   return data; 

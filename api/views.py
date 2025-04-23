@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 #from .models import User
 #from .serializers import UserSerializer
+from .user import buy_asset, sell_asset
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 
@@ -15,20 +16,6 @@ import json
 import mysql.connector
 from .config import config
 
-
-#class UsersView(APIView):
-#    def get(self, request):
-#        items = User.objects.all()
-#        serializer = UserSerializer(items, many=True)
-#        return Response(serializer.data)
-
-#    def post(self, request):
-#        serializer = UserSerializer(data=request.data)
-#        if serializer.is_valid():
-#            serializer.save()
-#            return Response(serializer.data, status=201)
-#        return Response(serializer.errors, status=400)
-    
     
 #TODO: login, check admin and user login info
 
@@ -154,28 +141,117 @@ def register(request):
         'isadmin': admin_valid
     })
 
-#TODO: balance info
+@csrf_exempt
 @api_view(['GET'])
 @renderer_classes([JSONRenderer])
-
 def get_account_balance(request):
     """Return account balance of user"""
+    try:
+        userid = int(request.query_params.get('userid'))
+    except:
+        return Response({'balance': '0.00'})
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
 
-    userid = 1 #TODO: temporary, frontend should send query param specifying userid
+    cursor.execute("SELECT Balance FROM BankAccount WHERE UserID = %s", (userid,))
+    row = cursor.fetchone()
 
-    query = "SELECT Balance FROM BankAccount WHERE UserID = " + userid
-    cursor.execute(query)
+    cursor.close()
+    conn.close()
 
-    balance = cursor.fetchone()
-    print(balance)
+    if not row:
+        return Response({'balance': '0.00'})
 
-    return Response({
-        'balance': str(balance)
+    return Response({'balance': str(row[0])})
+
+
+@csrf_exempt
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+def get_holdings(request):
+    """Return asset holdings of user"""
+
+    userid = request.query_params.get('userid')
+    try:
+        userid = int(userid)
+    except:
+        return Response({
+        'balance': '0.00'
     })
 
-#TODO: asset holdings
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
 
-#TODO: assets
+    cursor.execute("""SELECT AccountID
+                FROM BankAccount
+                WHERE UserID = %s""", ([userid]))
+
+    accid = 0
+
+    for c in cursor:
+        accid = c[0]
+
+    transid = 0
+    cursor.execute("""SELECT Buy.TransactionID
+                FROM Buy
+                WHERE AccountID = %s""", ([accid]))
+    for c in cursor:
+        transid = c[0]
+
+    cursor.execute("""SELECT Sell.TransactionID
+                FROM Sell
+                WHERE AccountID = %s""", ([accid]))
+    for c in cursor:
+        transid = c[0]
+
+    cursor.execute("""SELECT po.balance 
+                FROM Portfolio as po, Transaction as tr
+                WHERE tr.TransactionID = %s
+                and tr.PortfolioID = po.PortfolioID""", ([transid]))
+    for c in cursor:
+        port_balance = c[0]
+
+    return Response({
+        'balance': port_balance
+    })
+
+#TODO: get holdings of specific asset types
+
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def api_buy_asset(request):
+    try:
+        data = request.data
+        user_id = int(data.get('user_id'))
+        account_id = int(data.get('account_id'))
+        portfolio_id = int(data.get('portfolio_id'))
+        asset_id = int(data.get('asset_id'))
+        quantity = int(data.get('quantity'))
+
+        buy_asset(user_id, account_id, portfolio_id, asset_id, quantity)
+        return Response({'success': True})
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def api_sell_asset(request):
+    try:
+        data = request.data
+        user_id = int(data.get('user_id'))
+        account_id = int(data.get('account_id'))
+        portfolio_id = int(data.get('portfolio_id'))
+        asset_id = int(data.get('asset_id'))
+        quantity = int(data.get('quantity'))
+
+        sell_asset(user_id, account_id, portfolio_id, asset_id, quantity)
+        return Response({'success': True})
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+#TODO:

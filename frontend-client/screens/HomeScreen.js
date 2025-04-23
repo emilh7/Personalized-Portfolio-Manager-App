@@ -1,50 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
-import LogoutButton from '../components/LogoutButton'; // Adjust path as needed
-import axios from 'axios'; // make sure this is at the top
+import LogoutButton from '../components/LogoutButton';
+import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-async function get_balance(userid) {
-  try {
-    const { data } = await axios.get('http://localhost:8000/api/get_balance/', {
-      params: { userid },
-    });
-    return data.balance;
-  } catch (err) {
-    console.error('Failed to fetch balance:', err);
-    return null;
-  }
-}
-
-
 export default function HomeScreen({ navigation }) {
-
   const [balance, setBalance] = useState('$0.00');
+
   useEffect(() => {
     const fetchBalance = async () => {
       try {
         const userID = await AsyncStorage.getItem('userID');
         if (!userID) return;
-  
+
         const { data } = await axios.get('http://localhost:8000/api/get_account_balance/', {
-          params: { userid: userID } 
+          params: { userid: userID }
         });
-  
+
         setBalance(`$${parseFloat(data.balance).toFixed(2)}`);
       } catch (err) {
         console.error('Balance fetch error:', err);
       }
     };
-  
+
     fetchBalance();
   }, []);
 
-
-  // Mock data
   const portfolioData = {
-
     balance: balance,
-
     totalAssets: "$56,780.00",
     assets: [
       { name: "Stocks", value: "$32,450.00", change: "+2.4%" },
@@ -59,19 +42,16 @@ export default function HomeScreen({ navigation }) {
         <ScrollView contentContainerStyle={styles.container}>
           <LogoutButton navigation={navigation} />
 
-          {/* Header */}
           <Text style={styles.header}>Mr Fintastic!</Text>
-          
-           {/* Balance Card (Clickable) */}
-           <TouchableOpacity 
+
+          <TouchableOpacity 
             style={styles.card}
-            onPress={() => navigation.navigate('FundsManagement')} 
+            onPress={() => navigation.navigate('FundsManagement')}
           >
             <Text style={styles.cardLabel}>Available Balance</Text>
             <Text style={styles.balanceText}>{portfolioData.balance}</Text>
           </TouchableOpacity>
-          
-          {/* Total Assets (Clickable) */}
+
           <TouchableOpacity 
             style={styles.card}
             onPress={() => navigation.navigate('AssetDetails')}
@@ -79,8 +59,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.cardLabel}>Total Assets</Text>
             <Text style={styles.assetText}>{portfolioData.totalAssets}</Text>
           </TouchableOpacity>
-          
-          {/* Asset Breakdown */}
+
           <Text style={styles.sectionTitle}>Asset Allocation</Text>
           {portfolioData.assets.map((asset, index) => (
             <View key={index} style={styles.assetCard}>
@@ -88,7 +67,7 @@ export default function HomeScreen({ navigation }) {
               <View style={styles.assetValueContainer}>
                 <Text style={styles.assetValue}>{asset.value}</Text>
                 <Text style={[
-                  styles.assetChange, 
+                  styles.assetChange,
                   asset.change.startsWith('+') ? styles.positive : styles.negative
                 ]}>
                   {asset.change}
@@ -96,8 +75,7 @@ export default function HomeScreen({ navigation }) {
               </View>
             </View>
           ))}
-          
-          {/* Action Buttons */}
+
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={styles.actionButton}
@@ -112,16 +90,15 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-// constant dimensions for demo
-const phoneWidth = 393; 
-const phoneHeight = 852; 
+const phoneWidth = 393;
+const phoneHeight = 852;
 
 const styles = StyleSheet.create({
   phoneFrame: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0', // Frame color
+    backgroundColor: '#f0f0f0',
     padding: 20,
   },
   phoneScreen: {
@@ -143,7 +120,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: 'bold',
-    fontFamily: "Lobster-Regular", 
+    fontFamily: "Lobster-Regular",
     marginBottom: 30,
     textAlign: 'center',
     color: '#333',
@@ -167,12 +144,12 @@ const styles = StyleSheet.create({
   balanceText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#2e7d32', // Green for balance
+    color: '#2e7d32',
   },
   assetText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1976d2', // Blue for assets
+    color: '#1976d2',
   },
   sectionTitle: {
     fontSize: 18,
@@ -206,10 +183,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   positive: {
-    color: '#2e7d32', // Green
+    color: '#2e7d32',
   },
   negative: {
-    color: '#d32f2f', // Red
+    color: '#d32f2f',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -224,9 +201,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     marginHorizontal: 5,
-  },
-  sellButton: {
-    backgroundColor: '#d32f2f',
   },
   buttonText: {
     color: 'white',

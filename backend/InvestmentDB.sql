@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS Portfolio;
 
 CREATE TABLE User (
 	UserID INT NOT NULL PRIMARY KEY,
+    Username VARCHAR(150) NULL,
 	Pass INT NOT NULL,
 	Email VARCHAR(100) NOT NULL
 );
@@ -121,12 +122,12 @@ CREATE TABLE HasInfo (
 	FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID)
 );
 
-INSERT INTO User (UserID, Email, Pass) VALUES
-(1, 'alice@example.com', 1234),
-(2, 'bob@example.com', 1234),
-(3, 'carol@example.com', 1234),
-(4, 'david@example.com' ,1234),
-(5, 'eva@example.com', 1234);
+INSERT INTO User (UserID, Username, Email, Pass) VALUES
+(1, 'user1', 'alice@example.com', 1234),
+(2, 'user2', 'bob@example.com', 1234),
+(3, 'user3', 'carol@example.com', 1234),
+(4, 'user4', 'david@example.com' ,1234),
+(5, 'user5', 'eva@example.com', 1234);
 
 INSERT INTO Admin (AdminID, Pass) VALUES
 (101, 4321),
