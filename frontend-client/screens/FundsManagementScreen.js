@@ -5,6 +5,9 @@ export default function FundsManagementScreen({ navigation, route }) {
   const [amount, setAmount] = useState('');
   const [action, setAction] = useState('add'); // 'add' or 'remove'
 
+  // TODO: Replace with actual balance from Django backend
+  const currentBalance = "$12,450.00";
+
   const handleTransaction = () => {
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
@@ -22,36 +25,46 @@ export default function FundsManagementScreen({ navigation, route }) {
     <View style={styles.phoneFrame}>
       <View style={styles.phoneScreen}>
         <View style={styles.container}>
-          <Text style={styles.title}>
-            {action === 'add' ? 'Add Funds' : 'Withdraw Funds'}
-          </Text>
-          
-          <View style={styles.toggleContainer}>
+
+          {/* Back button */}
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+
+          {/* Balance Display */}
+          <View style={styles.balanceCard}>
+            <Text style={styles.cardLabel}>Available Balance</Text>
+            <Text style={styles.balanceText}>{currentBalance}</Text>
+          </View>
+
+          {/* Toggle Tabs */}
+          <View style={styles.tabRow}>
             <TouchableOpacity
-              style={[styles.toggleButton, action === 'add' && styles.activeToggle]}
+              style={[styles.tab, action === 'add' && styles.activeTab]}
               onPress={() => setAction('add')}
             >
-              <Text style={styles.toggleText}>Add</Text>
+              <Text style={styles.tabText}>Deposit</Text>
             </TouchableOpacity>
-            
             <TouchableOpacity
-              style={[styles.toggleButton, action === 'remove' && styles.activeToggle]}
+              style={[styles.tab, action === 'remove' && styles.activeTab]}
               onPress={() => setAction('remove')}
             >
-              <Text style={styles.toggleText}>Withdraw</Text>
+              <Text style={styles.tabText}>Withdraw</Text>
             </TouchableOpacity>
           </View>
 
+          {/* Amount Input */}
           <TextInput
             style={styles.input}
-            placeholder={`Amount to ${action === 'add' ? 'add' : 'withdraw'}`}
+            placeholder={`Amount to ${action === 'add' ? 'deposit' : 'withdraw'}`}
             keyboardType="numeric"
             value={amount}
             onChangeText={setAmount}
           />
 
+          {/* Confirm Button */}
           <TouchableOpacity 
-            style={styles.confirmButton} 
+            style={[styles.confirmButton, action === 'add' ? styles.depositButton : styles.withdrawButton]} 
             onPress={handleTransaction}
           >
             <Text style={styles.buttonText}>
@@ -92,31 +105,61 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
-    color: '#333',
-    fontFamily: 'Lobster-Regular',
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  toggleButton: {
-    padding: 15,
-    marginHorizontal: 10,
+  backButton: {
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+    backgroundColor: '#eee',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: '#e0e0e0',
   },
-  activeToggle: {
-    backgroundColor: '#1976d2',
-  },
-  toggleText: {
-    color: '#333',
+  backButtonText: {
+    color: '#1976d2',
+    fontSize: 16,
     fontWeight: 'bold',
+  },
+  balanceCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+    alignItems: 'center',
+  },
+  cardLabel: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 5,
+  },
+  balanceText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#2e7d32',
+  },
+  tabRow: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    borderBottomWidth: 2,
+    borderColor: '#ccc',
+  },
+  tab: {
+    flex: 1,
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderColor: 'transparent',
+  },
+  activeTab: {
+    borderColor: '#1976d2',
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1976d2',
   },
   input: {
     height: 50,
@@ -129,23 +172,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   confirmButton: {
-    backgroundColor: '#2e7d32',
-    borderRadius: 8,
     padding: 15,
+    borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 20,
+  },
+  depositButton: {
+    backgroundColor: '#1976d2',
+  },
+  withdrawButton: {
+    backgroundColor: '#d32f2f',
   },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
-  },
-  backButton: {
-    alignSelf: 'center',
-    padding: 10,
-  },
-  backButtonText: {
-    color: '#1976d2',
     fontSize: 16,
   },
 });

@@ -8,6 +8,8 @@ import LoginScreen from './screens/LoginScreen';
 import RegistrationScreen from './screens/RegistrationScreen';
 import HomeScreen from './screens/HomeScreen';
 import FundsManagementScreen from './screens/FundsManagementScreen';
+import TransactionScreen from './screens/TransactionScreen'
+import AssetDetails from './screens/AssetDetailsScreen'
 
 const Stack = createNativeStackNavigator();
 
@@ -63,7 +65,7 @@ export default function App() {
         {/*Transaction Screen (Buying and Selling)*/}
         <Stack.Screen 
           name="Transaction" 
-          component={require('./screens/TransactionScreen').default}
+          component={TransactionScreen}
           options={{
             title: 'Trade Assets',
             headerTitleStyle: {
@@ -73,6 +75,13 @@ export default function App() {
             headerBackTitleVisible: false,
           }}
         />
+        {/*Asset Detail Screen*/}
+        <Stack.Screen
+          name="AssetDetails"
+          component={AssetDetails}
+          options={{ headerShown: false }}
+        />
+
 
       </Stack.Navigator>
     </NavigationContainer>
