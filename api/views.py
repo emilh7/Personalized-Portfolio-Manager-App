@@ -319,7 +319,6 @@ def remove_user(request):
 def list_asset(request):
     portfolio_id = 3001   # default master portfolio
     quantity = 1          # default starting quantity
-    admin_id = int(input("Admin ID: "))  # prompt for admin ID
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
