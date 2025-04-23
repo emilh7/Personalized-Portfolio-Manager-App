@@ -28,7 +28,6 @@ export default function HomeScreen({ navigation }) {
 
   const portfolioData = {
 
-
     balance: "$12,450.00",
     totalAssets: "$56,780.00",
     assets: [

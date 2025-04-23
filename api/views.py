@@ -224,6 +224,8 @@ def get_holdings(request):
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
 def api_buy_asset(request):
+    print(request)
+    print(request.data)
     try:
         data = request.data
         user_id = int(data.get('user_id'))
@@ -256,4 +258,124 @@ def api_sell_asset(request):
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-#TODO:
+
+#admin functions
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def remove_user(request):
+
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    try:
+        data = request.data
+        user_id = int(data.get('user_id'))
+
+        # 1) Remove any moderation links for this user
+        cursor.execute(
+            "DELETE FROM ModerateActivity WHERE UserID = %s",
+            (user_id)
+        )
+
+        # 2) Find and delete all bank‑account‑related records
+        cursor.execute(
+            "SELECT AccountID FROM BankAccount WHERE UserID = %s",
+            (user_id)
+        )
+        accounts = cursor.fetchall()
+        for (acct_id,) in accounts:
+            # delete any buys/sells on that account
+            cursor.execute("DELETE FROM Buy  WHERE AccountID = %s", (acct_id,))
+            cursor.execute("DELETE FROM Sell WHERE AccountID = %s", (acct_id,))
+
+        # 3) Delete the user’s bank accounts
+        cursor.execute(
+            "DELETE FROM BankAccount WHERE UserID = %s",
+            (user_id)
+        )
+
+        # 4) Finally delete the user record
+        cursor.execute(
+            "DELETE FROM User WHERE UserID = %s",
+            (user_id)
+        )
+
+        conn.commit()
+        
+    except mysql.connector.Error as err:
+        conn.rollback()
+        return Response({'success': False, 'error': str(err)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    finally:
+        cursor.close()
+        conn.close()
+
+    return Response({'success': True})
+
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def list_asset(request):
+    portfolio_id = 3001   # default master portfolio
+    quantity = 1          # default starting quantity
+    admin_id = int(input("Admin ID: "))  # prompt for admin ID
+
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    try:
+        data = request.data
+        asset_id = data.get('asset_id')
+        asset_type = data.get('asset_type')
+        name = data.get('name')
+        start_price = data.get('start_price')
+
+        # Insert into Assets table
+        cursor.execute("""
+            INSERT INTO Assets (AssetID, AssetType, AssetName, MarketValue, PortfolioID, Quantity)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (asset_id, asset_type, name, float(start_price), portfolio_id, quantity))
+
+        # Insert into List table
+        cursor.execute("""
+            INSERT INTO List (AssetID, AdminID)
+            VALUES (%s, %s)
+        """, (asset_id, admin_id))
+
+        conn.commit()
+
+    except mysql.connector.Error as err:
+        return Response({'success': False, 'error': str(err)}, status=status.HTTP_400_BAD_REQUEST)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return Response({'success': True})
+
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def delist_asset(request):
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+
+    try:
+        data = request.data
+
+        asset_id = data.get('asset_id')
+
+        # Delete from List first (foreign key constraint)
+        cursor.execute("DELETE FROM List WHERE AssetID = %s", (asset_id,))
+        cursor.execute("DELETE FROM Assets WHERE AssetID = %s", (asset_id,))
+        conn.commit()
+
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    finally:
+        cursor.close()
+        conn.close()
+
+    return Response({'success': True})
