@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import axios from 'axios';
 
 export default function TransactionScreen({ navigation }) {
   const [mode, setMode] = useState('buy');
@@ -27,12 +28,35 @@ export default function TransactionScreen({ navigation }) {
     { id: 9006, name: 'TSLA', value: 720.45, ownedQty: 8 },
   ];
 
-  const handleTransaction = (asset) => {
+  const handleTransaction = async (asset) => {
     const qty = quantityMap[asset.id];
-    if (!qty) return;
-    alert(`${mode === 'buy' ? 'Buying' : 'Selling'} ${qty} of ${asset.name}`);
-    setQuantityMap((prev) => ({ ...prev, [asset.id]: '' }));
-    setExpandedId(null);
+    if (!qty || isNaN(qty) || qty <= 0) return alert("Please enter a valid quantity");
+
+    // Construct the data to send
+    const transactionData = {
+      asset_id: asset.id,
+      quantity: qty,
+      type: mode === 'buy' ? 'buy' : 'sell',
+    };
+
+    const endpoint = mode === 'buy' 
+      ? 'http://localhost:8000/api/buy/' 
+      : 'http://localhost:8000/api/sell/';
+
+    try {
+      const response = await axios.post(endpoint, transactionData);
+      if (response.status === 200) {
+        alert(`${mode === 'buy' ? 'Bought' : 'Sold'} ${qty} of ${asset.name}`);
+        // Reset quantity after successful transaction
+        setQuantityMap((prev) => ({ ...prev, [asset.id]: '' }));
+        setExpandedId(null);
+      } else {
+        alert('Error processing transaction. Please try again.');
+      }
+    } catch (error) {
+      console.error('Transaction error:', error);
+      alert('Error processing transaction. Please try again.');
+    }
   };
 
   const handleExpandToggle = (id) => {
