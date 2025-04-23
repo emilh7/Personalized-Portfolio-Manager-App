@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
-import LogoutButton from '../components/LogoutButton';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
+async function get_balance(userid) {
+  const { data } = await axios.get(
+    'http://localhost:8000/api/get_account_balance/',
+    { params: { userid } }
+  );
+
+  console.log(data)
+  return data
+}
 
 export default function HomeScreen({ navigation, route }) {
   // Mock data
@@ -11,30 +17,18 @@ export default function HomeScreen({ navigation, route }) {
     try {
       const {balance} = await get_balance(1)
       console.log(balance)
-      
-  useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        const userID = await AsyncStorage.getItem('userID');
-        if (!userID) return;
 
-        const { data } = await axios.get('http://localhost:8000/api/get_account_balance/', {
-          params: { userid: userID }
-        });
-
-
-        setBalance(`$${parseFloat(data.balance).toFixed(2)}`);
-      } catch (err) {
-        console.error('Balance fetch error:', err);
-      }
-    };
-
-    fetchBalance();
-  }, []);
+      return balance
+  
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Could not connect to server');
+    }
+  };
 
   const portfolioData = {
-    balance: balance,
 
+    balance: "$12,450.00",
     totalAssets: "$56,780.00",
     assets: [
       { name: "Stocks", value: "$32,450.00", change: "+2.4%" },
@@ -47,18 +41,19 @@ export default function HomeScreen({ navigation, route }) {
     <View style={styles.phoneFrame}>
       <View style={styles.phoneScreen}>
         <ScrollView contentContainerStyle={styles.container}>
-          <LogoutButton navigation={navigation} />
-
+          {/* Header */}
           <Text style={styles.header}>Mr Fintastic!</Text>
-
-          <TouchableOpacity 
+          
+           {/* Balance Card (Clickable) */}
+           <TouchableOpacity 
             style={styles.card}
-            onPress={() => navigation.navigate('FundsManagement')}
+            onPress={() => navigation.navigate('FundsManagement')} 
           >
             <Text style={styles.cardLabel}>Available Balance</Text>
             <Text style={styles.balanceText}>{portfolioData.balance}</Text>
           </TouchableOpacity>
-
+          
+          {/* Total Assets (Clickable) */}
           <TouchableOpacity 
             style={styles.card}
             onPress={() => navigation.navigate('AssetDetails')}
@@ -66,7 +61,8 @@ export default function HomeScreen({ navigation, route }) {
             <Text style={styles.cardLabel}>Total Assets</Text>
             <Text style={styles.assetText}>{portfolioData.totalAssets}</Text>
           </TouchableOpacity>
-
+          
+          {/* Asset Breakdown */}
           <Text style={styles.sectionTitle}>Asset Allocation</Text>
           {portfolioData.assets.map((asset, index) => (
             <View key={index} style={styles.assetCard}>
@@ -74,7 +70,7 @@ export default function HomeScreen({ navigation, route }) {
               <View style={styles.assetValueContainer}>
                 <Text style={styles.assetValue}>{asset.value}</Text>
                 <Text style={[
-                  styles.assetChange,
+                  styles.assetChange, 
                   asset.change.startsWith('+') ? styles.positive : styles.negative
                 ]}>
                   {asset.change}
@@ -82,7 +78,8 @@ export default function HomeScreen({ navigation, route }) {
               </View>
             </View>
           ))}
-
+          
+          {/* Action Buttons */}
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={styles.actionButton}
@@ -97,15 +94,16 @@ export default function HomeScreen({ navigation, route }) {
   );
 }
 
-const phoneWidth = 393;
-const phoneHeight = 852;
+// constant dimensions for demo
+const phoneWidth = 393; 
+const phoneHeight = 852; 
 
 const styles = StyleSheet.create({
   phoneFrame: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f0f0f0', // Frame color
     padding: 20,
   },
   phoneScreen: {
@@ -127,7 +125,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: 'bold',
-    fontFamily: "Lobster-Regular",
+    fontFamily: "Lobster-Regular", 
     marginBottom: 30,
     textAlign: 'center',
     color: '#333',
@@ -151,12 +149,12 @@ const styles = StyleSheet.create({
   balanceText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#2e7d32',
+    color: '#2e7d32', // Green for balance
   },
   assetText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1976d2',
+    color: '#1976d2', // Blue for assets
   },
   sectionTitle: {
     fontSize: 18,
@@ -190,10 +188,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   positive: {
-    color: '#2e7d32',
+    color: '#2e7d32', // Green
   },
   negative: {
-    color: '#d32f2f',
+    color: '#d32f2f', // Red
   },
   buttonRow: {
     flexDirection: 'row',
@@ -208,6 +206,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     marginHorizontal: 5,
+  },
+  sellButton: {
+    backgroundColor: '#d32f2f',
   },
   buttonText: {
     color: 'white',

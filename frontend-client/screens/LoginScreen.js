@@ -10,9 +10,6 @@ import {
   ScrollView,
 } from 'react-native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
 
 const phoneWidth = 393;
 const phoneHeight = 852;
@@ -47,7 +44,6 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
   
     try {
-
       // Get the FULL response from check_login
       const response = await check_login(username, password);
       console.log('Login API Response:', response); // Check this in browser console
@@ -58,7 +54,6 @@ export default function LoginScreen({ navigation }) {
         navigation.replace('Home', { 
           userID: response.userID // Must match "route.params.userID"
         });
-
       } else {
         Alert.alert('Login Failed', 'Invalid credentials');
       }
