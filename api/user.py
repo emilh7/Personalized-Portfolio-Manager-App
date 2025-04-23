@@ -1,12 +1,6 @@
 import mysql.connector
 from datetime import datetime
-
-config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '904134002',
-    'database': 'InvestmentDB'
-}
+from .config import config
 
 def register_user(email, password): # Default 20000 starting balance in bank accounts
     try:
