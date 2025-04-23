@@ -1,15 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
-
-async function get_balance(userid) {
-  const { data } = await axios.get(
-    'http://localhost:8000/api/get_account_balance/',
-    { params: { userid } }
-  );
-
-  console.log(data)
-  return data
-}
+import LogoutButton from '../components/LogoutButton';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen({ navigation, route }) {
   // Mock data
@@ -25,17 +18,19 @@ export default function HomeScreen({ navigation, route }) {
           params: { userid: userID }
         });
 
-      return balance
-  
-    } catch (err) {
-      console.error(err);
-      Alert.alert('Error', 'Could not connect to server');
-    }
-  };
+
+        setBalance(`$${parseFloat(data.balance).toFixed(2)}`);
+      } catch (err) {
+        console.error('Balance fetch error:', err);
+      }
+    };
+
+    fetchBalance();
+  }, []);
 
   const portfolioData = {
 
-    balance: "$12,450.00",
+    balance: balance,
     totalAssets: "$56,780.00",
     assets: [
       { name: "Stocks", value: "$32,450.00", change: "+2.4%" },

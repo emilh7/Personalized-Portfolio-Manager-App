@@ -157,15 +157,16 @@ def get_account_balance(request):
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
+    print(userid)
 
-    query = "SELECT Balance FROM BankAccount WHERE UserID = " + userid
+    query = "SELECT Balance FROM BankAccount WHERE UserID = " + str(userid)
     cursor.execute(query)
 
     balance = cursor.fetchone()
-    print(balance)
+    print(balance[0])
 
     return Response({
-        'balance': str(balance)
+        'balance': str(balance[0])
     })
 
 @csrf_exempt
