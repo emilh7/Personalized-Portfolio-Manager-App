@@ -197,3 +197,18 @@ INSERT INTO List (AssetID, AdminID) VALUES
 (9004, 101),
 (9005, 101),
 (9006, 101);
+
+ALTER TABLE `User`
+ADD COLUMN `Username` VARCHAR(150) NULL
+  AFTER `UserID`;
+
+UPDATE `User`
+  SET `Username` = CONCAT('user', UserID);
+
+
+ALTER TABLE `User`
+MODIFY COLUMN `Username` VARCHAR(150) NOT NULL;
+
+ALTER TABLE `User`
+ADD UNIQUE INDEX `ux_user_username` (`Username`);
+

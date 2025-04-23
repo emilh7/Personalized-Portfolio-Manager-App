@@ -83,16 +83,9 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => navigation.navigate('BuyAssets')}
+              onPress={() => navigation.navigate('Transaction')}
             >
-              <Text style={styles.buttonText}>Buy Assets</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.actionButton, styles.sellButton]}
-              onPress={() => navigation.navigate('SellAssets')}
-            >
-              <Text style={styles.buttonText}>Sell Assets</Text>
+              <Text style={styles.buttonText}>Buy and Sell!</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
