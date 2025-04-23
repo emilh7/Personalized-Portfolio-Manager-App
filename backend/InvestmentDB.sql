@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS Portfolio;
 
 CREATE TABLE User (
 	UserID INT NOT NULL PRIMARY KEY,
+    Username VARCHAR(150) NULL,
 	Pass INT NOT NULL,
 	Email VARCHAR(100) NOT NULL
 );
@@ -121,12 +122,12 @@ CREATE TABLE HasInfo (
 	FOREIGN KEY (PortfolioID) REFERENCES Portfolio(PortfolioID)
 );
 
-INSERT INTO User (UserID, Email, Pass) VALUES
-(1, 'alice@example.com', 1234),
-(2, 'bob@example.com', 1234),
-(3, 'carol@example.com', 1234),
-(4, 'david@example.com' ,1234),
-(5, 'eva@example.com', 1234);
+INSERT INTO User (UserID, Username, Email, Pass) VALUES
+(1, 'user1', 'alice@example.com', 1234),
+(2, 'user2', 'bob@example.com', 1234),
+(3, 'user3', 'carol@example.com', 1234),
+(4, 'user4', 'david@example.com' ,1234),
+(5, 'user5', 'eva@example.com', 1234);
 
 INSERT INTO Admin (AdminID, Pass) VALUES
 (101, 4321),
@@ -134,8 +135,6 @@ INSERT INTO Admin (AdminID, Pass) VALUES
 (103, 4321),
 (104, 4321),
 (105, 4321);
-
-SELECT * FROM Admin;
 
 INSERT INTO BankAccount (AccountID, UserID, Balance) VALUES
 (5001, 1, 10000.00),
@@ -152,11 +151,11 @@ INSERT INTO ModerateActivity (UserID, AdminID) VALUES
 (5, 105);
 
 INSERT INTO Portfolio (PortfolioID, Balance) VALUES
-(3001, 20000.00),
-(3002, 15000.00),
-(3003, 17000.00),
-(3004, 9500.00),
-(3005, 13400.00);
+(3001, 3505.00),
+(3002, 45758.75),
+(3003, 5000.00),
+(3004, 6000.00),
+(3005, 5763.60);
 
 INSERT INTO Transaction (TransactionID, Amount, Type, PortfolioID) VALUES
 (8001, 3500.00, 'Buy', 3001),
@@ -198,4 +197,18 @@ INSERT INTO List (AssetID, AdminID) VALUES
 (9004, 101),
 (9005, 101),
 (9006, 101);
+
+ALTER TABLE `User`
+ADD COLUMN `Username` VARCHAR(150) NULL
+  AFTER `UserID`;
+
+UPDATE `User`
+  SET `Username` = CONCAT('user', UserID);
+
+
+ALTER TABLE `User`
+MODIFY COLUMN `Username` VARCHAR(150) NOT NULL;
+
+ALTER TABLE `User`
+ADD UNIQUE INDEX `ux_user_username` (`Username`);
 
