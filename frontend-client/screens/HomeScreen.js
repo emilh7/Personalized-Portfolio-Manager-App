@@ -1,20 +1,50 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
+import LogoutButton from '../components/LogoutButton'; // Adjust path as needed
+import axios from 'axios'; // make sure this is at the top
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 async function get_balance(userid) {
-  const { data } = await axios.get(
-      'http://localhost:8000/api/check_login/',
-      { params: { username, password } }
-    );
+  try {
+    const { data } = await axios.get('http://localhost:8000/api/get_balance/', {
+      params: { userid },
+    });
+    return data.balance;
+  } catch (err) {
+    console.error('Failed to fetch balance:', err);
+    return null;
+  }
 }
 
+
 export default function HomeScreen({ navigation }) {
+
+  const [balance, setBalance] = useState('$0.00');
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const userID = await AsyncStorage.getItem('userID');
+        if (!userID) return;
+  
+        const { data } = await axios.get('http://localhost:8000/api/get_account_balance/', {
+          params: { userid: userID } 
+        });
+  
+        setBalance(`$${parseFloat(data.balance).toFixed(2)}`);
+      } catch (err) {
+        console.error('Balance fetch error:', err);
+      }
+    };
+  
+    fetchBalance();
+  }, []);
+
+
   // Mock data
   const portfolioData = {
 
+    balance: balance,
 
-
-    balance: "$12,450.00",
     totalAssets: "$56,780.00",
     assets: [
       { name: "Stocks", value: "$32,450.00", change: "+2.4%" },
@@ -27,6 +57,8 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.phoneFrame}>
       <View style={styles.phoneScreen}>
         <ScrollView contentContainerStyle={styles.container}>
+          <LogoutButton navigation={navigation} />
+
           {/* Header */}
           <Text style={styles.header}>Mr Fintastic!</Text>
           
