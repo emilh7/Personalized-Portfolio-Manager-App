@@ -47,7 +47,9 @@ CREATE TABLE ModerateActivity (
 
 CREATE TABLE Portfolio (
 	PortfolioID INT NOT NULL PRIMARY KEY,
-	Balance DECIMAL(15,2)
+	UserID INT NOT NULL,
+	Balance DECIMAL(15,2),
+	FOREIGN KEY (UserID) REFERENCES User(UserID)
 );
 
 CREATE TABLE Transaction (
@@ -150,12 +152,12 @@ INSERT INTO ModerateActivity (UserID, AdminID) VALUES
 (4, 104),
 (5, 105);
 
-INSERT INTO Portfolio (PortfolioID, Balance) VALUES
-(3001, 3505.00),
-(3002, 45758.75),
-(3003, 5000.00),
-(3004, 6000.00),
-(3005, 5763.60);
+INSERT INTO Portfolio (PortfolioID, UserID, Balance) VALUES
+(3001, 1, 3505.00),
+(3002, 2, 45758.75),
+(3003, 3, 5000.00),
+(3004, 4, 6000.00),
+(3005, 5, 5763.60);
 
 INSERT INTO Transaction (TransactionID, Amount, Type, PortfolioID) VALUES
 (8001, 3500.00, 'Buy', 3001),
@@ -197,18 +199,4 @@ INSERT INTO List (AssetID, AdminID) VALUES
 (9004, 101),
 (9005, 101),
 (9006, 101);
-
-ALTER TABLE `User`
-ADD COLUMN `Username` VARCHAR(150) NULL
-  AFTER `UserID`;
-
-UPDATE `User`
-  SET `Username` = CONCAT('user', UserID);
-
-
-ALTER TABLE `User`
-MODIFY COLUMN `Username` VARCHAR(150) NOT NULL;
-
-ALTER TABLE `User`
-ADD UNIQUE INDEX `ux_user_username` (`Username`);
 
