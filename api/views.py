@@ -16,20 +16,6 @@ import json
 import mysql.connector
 from .config import config
 
-
-#class UsersView(APIView):
-#    def get(self, request):
-#        items = User.objects.all()
-#        serializer = UserSerializer(items, many=True)
-#        return Response(serializer.data)
-
-#    def post(self, request):
-#        serializer = UserSerializer(data=request.data)
-#        if serializer.is_valid():
-#            serializer.save()
-#            return Response(serializer.data, status=201)
-#        return Response(serializer.errors, status=400)
-    
     
 #TODO: login, check admin and user login info
 
@@ -155,6 +141,7 @@ def register(request):
         'isadmin': admin_valid
     })
 
+@csrf_exempt
 @api_view(['GET'])
 @renderer_classes([JSONRenderer])
 def get_account_balance(request):
@@ -181,6 +168,7 @@ def get_account_balance(request):
         'balance': str(balance)
     })
 
+@csrf_exempt
 @api_view(['GET'])
 @renderer_classes([JSONRenderer])
 def get_holdings(request):
@@ -230,6 +218,8 @@ def get_holdings(request):
         'balance': port_balance
     })
 
+#TODO: get holdings of specific asset types
+
 @csrf_exempt
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
@@ -265,3 +255,5 @@ def api_sell_asset(request):
 
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+#TODO:
