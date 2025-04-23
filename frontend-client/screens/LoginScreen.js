@@ -20,16 +20,20 @@ const phoneHeight = 852;
 import axios, { AxiosResponse } from 'axios';
 
 async function check_login(username, password) {
-  try {
-    const response = await axios.post(
-      'http://localhost:8000/api/check_login/',
-      { username, password }
-    );
-    return response.data; // Return parsed API response
-  } catch (err) {
-    console.error('API call failed:', err);
-    throw err; // Propagate the error
-  }
+  console.log(username)
+  console.log(password)
+  
+  const { data } = await axios.post(
+    'http://localhost:8000/api/check_login/',
+    { username, password }
+  );
+
+  console.log(data); // log the parsed data object
+
+  console.log(data.isuser);
+  console.log(data.isadmin);
+
+  return data; 
 }
 
 
@@ -48,23 +52,21 @@ export default function LoginScreen({ navigation }) {
   
     try {
 
-      // Get the FULL response from check_login
-      const response = await check_login(username, password);
-      console.log('Login API Response:', response); // Check this in browser console
-      // Destructure values safely
-      const { isuser = false, userID = null } = response;
+      const data = await check_login(username, password);
+      const { isuser, isadmin, userID } = data;
   
       if (isuser) {
-        navigation.replace('Home', { 
-          userID: response.userID // Must match "route.params.userID"
-        });
+        // Storing username and user ID in async storage
+        await AsyncStorage.setItem('userID', data.userID.toString()); // assuming Django sends this
+        await AsyncStorage.setItem('username', username);
+        navigation.replace('Home');
 
       } else {
-        Alert.alert('Login Failed', 'Invalid credentials');
+        Alert.alert('Login Failed', 'Invalid username or password');
       }
     } catch (err) {
-      console.error('Login error:', err);
-      Alert.alert('Error', 'Login failed. Check console for details.');
+      console.error(err);
+      Alert.alert('Error', 'Could not connect to server');
     } finally {
       setLoading(false);
     }
