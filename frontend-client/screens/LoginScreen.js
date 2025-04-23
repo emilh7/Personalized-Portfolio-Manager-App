@@ -10,9 +10,6 @@ import {
   ScrollView,
 } from 'react-native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
 
 const phoneWidth = 393;
 const phoneHeight = 852;
