@@ -13,10 +13,17 @@ async function get_balance(userid) {
 
 export default function HomeScreen({ navigation, route }) {
   // Mock data
-  const usrbalance = async () => {
-    try {
-      const {balance} = await get_balance(1)
-      console.log(balance)
+  const [balance, setBalance] = useState('$0.00');
+      
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const userID = await AsyncStorage.getItem('userID');
+        if (!userID) return;
+
+        const { data } = await axios.get('http://localhost:8000/api/get_account_balance/', {
+          params: { userid: userID }
+        });
 
       return balance
   
