@@ -378,3 +378,28 @@ def delist_asset(request):
         conn.close()
 
     return Response({'success': True})
+
+@csrf_exempt
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+def get_user_account_info(request):
+    user_id = request.query_params.get('userid')
+    try:
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+        
+        # Get AccountID
+        cursor.execute("SELECT AccountID FROM BankAccount WHERE UserID = %s", (user_id,))
+        account_id = cursor.fetchone()[0]
+        
+        # Get PortfolioID
+        cursor.execute("SELECT PortfolioID FROM Portfolio WHERE UserID = %s", (user_id,))
+        portfolio_id = cursor.fetchone()[0]
+        
+        return Response({'account_id': account_id, 'portfolio_id': portfolio_id})
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+    finally:
+        cursor.close()
+        conn.close()

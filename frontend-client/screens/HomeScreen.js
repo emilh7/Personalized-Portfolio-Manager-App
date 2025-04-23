@@ -11,7 +11,7 @@ async function get_balance(userid) {
   return data
 }
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, route }) {
   // Mock data
   const usrbalance = async () => {
     try {
@@ -83,7 +83,7 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => navigation.navigate('Transaction')}
+              onPress={() => navigation.navigate('Transaction', { userID: route.params.userID })}
             >
               <Text style={styles.buttonText}>Buy and Sell!</Text>
             </TouchableOpacity>
