@@ -225,41 +225,47 @@ def get_holdings(request):
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
 def api_buy_asset(request):
-    print(request)
-    print(request.data)
     try:
         data = request.data
-        user_id = int(data.get('user_id'))
-        account_id = int(data.get('account_id'))
-        portfolio_id = int(data.get('portfolio_id'))
-        asset_id = int(data.get('asset_id'))
-        quantity = int(data.get('quantity'))
-
-        buy_asset(user_id, account_id, portfolio_id, asset_id, quantity)
-        return Response({'success': True})
-
-    except Exception as e:
-        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+        success, error = buy_asset(
+            user_id=int(data['user_id']),
+            account_id=int(data['account_id']),
+            portfolio_id=int(data['portfolio_id']),
+            asset_id=int(data['asset_id']),
+            quantity=int(data['quantity'])
+        )
+        
+        return Response({'success': success, 'error': error}, 
+                      status=200 if success else 400)
+                      
+    except KeyError as e:
+        return Response({'success': False, 'error': f'Missing field: {str(e)}'}, 
+                      status=400)
+    except ValueError as e:
+        return Response({'success': False, 'error': 'Invalid numeric value'}, 
+                      status=400)
+    
 @csrf_exempt
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
 def api_sell_asset(request):
     try:
         data = request.data
-        user_id = int(data.get('user_id'))
-        account_id = int(data.get('account_id'))
-        portfolio_id = int(data.get('portfolio_id'))
-        asset_id = int(data.get('asset_id'))
-        quantity = int(data.get('quantity'))
-
-        sell_asset(user_id, account_id, portfolio_id, asset_id, quantity)
-        return Response({'success': True})
+        success, error = sell_asset(
+            user_id=int(data.get('user_id')),
+            account_id=int(data.get('account_id')),
+            portfolio_id=int(data.get('portfolio_id')),
+            asset_id=int(data.get('asset_id')),
+            quantity=int(data.get('quantity'))
+        )
+        if success:
+            return Response({'success': True})
+        else:
+            return Response({'success': False, 'error': error}, status=400)
 
     except Exception as e:
-        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
+        return Response({'success': False, 'error': str(e)}, status=400)
+    
 #admin functions
 @csrf_exempt
 @api_view(['POST'])
