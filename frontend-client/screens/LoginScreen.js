@@ -58,7 +58,9 @@ export default function LoginScreen({ navigation }) {
         // Storing username and user ID in async storage
         await AsyncStorage.setItem('userID', data.userID.toString()); // assuming Django sends this
         await AsyncStorage.setItem('username', username);
-        navigation.replace('Home');
+        navigation.replace('Home', { 
+          userID: data.userID // Must match "route.params.userID"
+        });
 
       } else {
         Alert.alert('Login Failed', 'Invalid username or password');
