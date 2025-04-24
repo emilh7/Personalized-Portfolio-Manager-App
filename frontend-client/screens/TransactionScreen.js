@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,15 @@ import {
 } from 'react-native';
 import axios from 'axios';
 
-export default function TransactionScreen({ navigation }) {
+export default function TransactionScreen({ navigation, route }) {
   const [mode, setMode] = useState('buy');
   const [quantityMap, setQuantityMap] = useState({});
   const [expandedId, setExpandedId] = useState(null);
+  const { userID } = route.params;
+  const [accountID, setAccountID] = useState(null);
+  const [portfolioID, setPortfolioID] = useState(null);
+
+
 
   const availableAssets = [
     { id: 9001, name: 'US10Y Bond', value: 1000.0 },
@@ -29,36 +34,77 @@ export default function TransactionScreen({ navigation }) {
   ];
 
   const handleTransaction = async (asset) => {
+    // 1. Check if account info is loaded
+    if (!accountID || !portfolioID) {
+      alert("Account information not loaded yet. Please wait a moment.");
+      return;
+    }
+  
+    // 2. Validate quantity input
     const qty = quantityMap[asset.id];
-    if (!qty || isNaN(qty) || qty <= 0) return alert("Please enter a valid quantity");
-
-    // Construct the data to send
+    if (!qty || isNaN(qty) || qty <= 0) {
+      alert("Please enter a valid quantity greater than zero");
+      return;
+    }
+  
+    // 3. Prepare transaction payload
     const transactionData = {
-      asset_id: asset.id,
-      quantity: qty,
-      type: mode === 'buy' ? 'buy' : 'sell',
+      user_id: userID,          // From route params
+      account_id: accountID,    // From API call
+      portfolio_id: portfolioID,// From API call
+      asset_id: asset.id,       // From asset object
+      quantity: parseInt(qty, 10) // Convert to integer
     };
-
+  
+    // 4. Determine API endpoint
     const endpoint = mode === 'buy' 
-      ? 'http://localhost:8000/api/buy/' 
+      ? 'http://localhost:8000/api/buy/'
       : 'http://localhost:8000/api/sell/';
-
+  
     try {
+      // 5. Execute transaction
       const response = await axios.post(endpoint, transactionData);
-      if (response.status === 200) {
-        alert(`${mode === 'buy' ? 'Bought' : 'Sold'} ${qty} of ${asset.name}`);
-        // Reset quantity after successful transaction
-        setQuantityMap((prev) => ({ ...prev, [asset.id]: '' }));
+      
+      if (response.data.success) {
+        // 6. Handle success
+        alert(`Successfully ${mode === 'buy' ? 'bought' : 'sold'} ${qty} units of ${asset.name}!`);
+        
+        // Reset UI state
+        setQuantityMap(prev => ({ ...prev, [asset.id]: '' }));
         setExpandedId(null);
+        
+        // Optional: Refresh any relevant data
       } else {
-        alert('Error processing transaction. Please try again.');
+        // 7. Handle API error
+        alert(`Transaction failed: ${response.data.error || 'Unknown error'}`);
       }
     } catch (error) {
+      // 8. Handle network/validation errors
       console.error('Transaction error:', error);
-      alert('Error processing transaction. Please try again.');
+      
+      const errorMessage = error.response?.data?.error 
+        || error.message 
+        || 'Failed to process transaction';
+        
+      alert(`Error: ${errorMessage}`);
     }
   };
 
+  useEffect(() => {
+    const fetchAccountInfo = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/get_user_account_info/', {
+          params: { userid: userID }
+        });
+        setAccountID(response.data.account_id);
+        setPortfolioID(response.data.portfolio_id);
+      } catch (error) {
+        alert('Failed to load account info');
+      }
+    };
+    fetchAccountInfo();
+  }, [userID]);
+  
   const handleExpandToggle = (id) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };

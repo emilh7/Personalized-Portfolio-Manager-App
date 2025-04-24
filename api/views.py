@@ -157,15 +157,16 @@ def get_account_balance(request):
 
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
+    print(userid)
 
-    query = "SELECT Balance FROM BankAccount WHERE UserID = " + userid
+    query = "SELECT Balance FROM BankAccount WHERE UserID = " + str(userid)
     cursor.execute(query)
 
     balance = cursor.fetchone()
-    print(balance)
+    print(balance[0])
 
     return Response({
-        'balance': str(balance)
+        'balance': str(balance[0])
     })
 
 @csrf_exempt
@@ -224,41 +225,47 @@ def get_holdings(request):
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
 def api_buy_asset(request):
-    print(request)
-    print(request.data)
     try:
         data = request.data
-        user_id = int(data.get('user_id'))
-        account_id = int(data.get('account_id'))
-        portfolio_id = int(data.get('portfolio_id'))
-        asset_id = int(data.get('asset_id'))
-        quantity = int(data.get('quantity'))
-
-        buy_asset(user_id, account_id, portfolio_id, asset_id, quantity)
-        return Response({'success': True})
-
-    except Exception as e:
-        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+        success, error = buy_asset(
+            user_id=int(data['user_id']),
+            account_id=int(data['account_id']),
+            portfolio_id=int(data['portfolio_id']),
+            asset_id=int(data['asset_id']),
+            quantity=int(data['quantity'])
+        )
+        
+        return Response({'success': success, 'error': error}, 
+                      status=200 if success else 400)
+                      
+    except KeyError as e:
+        return Response({'success': False, 'error': f'Missing field: {str(e)}'}, 
+                      status=400)
+    except ValueError as e:
+        return Response({'success': False, 'error': 'Invalid numeric value'}, 
+                      status=400)
+    
 @csrf_exempt
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
 def api_sell_asset(request):
     try:
         data = request.data
-        user_id = int(data.get('user_id'))
-        account_id = int(data.get('account_id'))
-        portfolio_id = int(data.get('portfolio_id'))
-        asset_id = int(data.get('asset_id'))
-        quantity = int(data.get('quantity'))
-
-        sell_asset(user_id, account_id, portfolio_id, asset_id, quantity)
-        return Response({'success': True})
+        success, error = sell_asset(
+            user_id=int(data.get('user_id')),
+            account_id=int(data.get('account_id')),
+            portfolio_id=int(data.get('portfolio_id')),
+            asset_id=int(data.get('asset_id')),
+            quantity=int(data.get('quantity'))
+        )
+        if success:
+            return Response({'success': True})
+        else:
+            return Response({'success': False, 'error': error}, status=400)
 
     except Exception as e:
-        return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
+        return Response({'success': False, 'error': str(e)}, status=400)
+    
 #admin functions
 @csrf_exempt
 @api_view(['POST'])
@@ -378,3 +385,28 @@ def delist_asset(request):
         conn.close()
 
     return Response({'success': True})
+
+@csrf_exempt
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+def get_user_account_info(request):
+    user_id = request.query_params.get('userid')
+    try:
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+        
+        # Get AccountID
+        cursor.execute("SELECT AccountID FROM BankAccount WHERE UserID = %s", (user_id,))
+        account_id = cursor.fetchone()[0]
+        
+        # Get PortfolioID
+        cursor.execute("SELECT PortfolioID FROM Portfolio WHERE UserID = %s", (user_id,))
+        portfolio_id = cursor.fetchone()[0]
+        
+        return Response({'account_id': account_id, 'portfolio_id': portfolio_id})
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+    finally:
+        cursor.close()
+        conn.close()

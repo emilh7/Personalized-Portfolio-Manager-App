@@ -1,18 +1,12 @@
 import mysql.connector
 from datetime import datetime
-
-config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '904134002',
-    'database': 'InvestmentDB'
-}
+from .config import config
 
 def register_user(email, password): # Default 20000 starting balance in bank accounts
     try:
         conn = mysql.connector.connect(**config)
         cursor = conn.cursor()
-
+    
         # Get next UserID
         cursor.execute("SELECT MAX(UserID) FROM User")
         max_user_id = cursor.fetchone()[0]
@@ -27,6 +21,11 @@ def register_user(email, password): # Default 20000 starting balance in bank acc
         cursor.execute("SELECT MAX(PortfolioID) FROM Portfolio")
         max_portfolio_id = cursor.fetchone()[0]
         portfolio_id = (max_portfolio_id) + 1
+
+        # Link PortfolioID to UserID
+        cursor.execute("""
+        INSERT INTO Portfolio (PortfolioID, Balance, UserID) 
+        VALUES (%s, %s, %s)""", (portfolio_id, 0.00, user_id))  
 
         # Insert into User table
         cursor.execute("""
@@ -58,100 +57,172 @@ def register_user(email, password): # Default 20000 starting balance in bank acc
 def buy_asset(user_id, account_id, portfolio_id, asset_id, quantity):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
-
+    success = False
+    error = ""
+    
     try:
-        # Get current asset price
+        # 1. Get current asset price
         cursor.execute("SELECT MarketValue FROM Assets WHERE AssetID = %s", (asset_id,))
         price_result = cursor.fetchone()
+        
         if not price_result:
-            print("Asset not found.")
-            return
+            error = "Asset not found"
+            return (success, error)
+            
         market_value = price_result[0]
         total_cost = market_value * quantity
 
-        # Check account balance
+        # 2. Check account balance
         cursor.execute("SELECT Balance FROM BankAccount WHERE AccountID = %s", (account_id,))
         balance_result = cursor.fetchone()
-        if not balance_result or balance_result[0] < total_cost:
-            print("Insufficient funds.")
-            return
+        
+        if not balance_result:
+            error = "Bank account not found"
+            return (success, error)
+            
+        if balance_result[0] < total_cost:
+            error = f"Insufficient funds. Needed: ${total_cost:.2f}, Available: ${balance_result[0]:.2f}"
+            return (success, error)
 
-        # Deduct balance
-        cursor.execute("UPDATE BankAccount SET Balance = Balance - %s WHERE AccountID = %s", (total_cost, account_id))
+        # 3. Deduct balance
+        cursor.execute("""
+            UPDATE BankAccount 
+            SET Balance = Balance - %s 
+            WHERE AccountID = %s
+        """, (total_cost, account_id))
 
-        # Update Portfolio balance
-        cursor.execute("UPDATE Portfolio SET Balance = Balance + %s WHERE PortfolioID = %s", (total_cost, portfolio_id))
+        # 4. Update Portfolio balance
+        cursor.execute("""
+            UPDATE Portfolio 
+            SET Balance = Balance + %s 
+            WHERE PortfolioID = %s
+        """, (total_cost, portfolio_id))
 
-        # Generate new transaction ID
+        # 5. Generate transaction ID
         cursor.execute("SELECT MAX(TransactionID) FROM Transaction")
         max_tid = cursor.fetchone()[0] or 8000
         new_tid = max_tid + 1
 
-        # Insert transaction and buy record
-        cursor.execute("INSERT INTO Transaction (TransactionID, Amount, Type, PortfolioID) VALUES (%s, %s, %s, %s)",
-                       (new_tid, total_cost, 'Buy', portfolio_id))
-        cursor.execute("INSERT INTO Buy (TransactionID, AccountID) VALUES (%s, %s)", (new_tid, account_id))
+        # 6. Create transaction records
+        cursor.execute("""
+            INSERT INTO Transaction (TransactionID, Amount, Type, PortfolioID)
+            VALUES (%s, %s, %s, %s)
+        """, (new_tid, total_cost, 'Buy', portfolio_id))
+        
+        cursor.execute("""
+            INSERT INTO Buy (TransactionID, AccountID)
+            VALUES (%s, %s)
+        """, (new_tid, account_id))
 
-        # Update asset quantity
-        cursor.execute("UPDATE Assets SET Quantity = Quantity + %s WHERE AssetID = %s", (quantity, asset_id))
+        # 7. Update asset quantity
+        cursor.execute("""
+            UPDATE Assets 
+            SET Quantity = Quantity + %s 
+            WHERE AssetID = %s
+        """, (quantity, asset_id))
 
         conn.commit()
-        print(f"Bought {quantity} units of Asset {asset_id} for ${total_cost:.2f}.")
+        success = True
+        return (success, error)
 
-    except Exception as e:
-        print(f"Error in buying asset: {e}")
+    except mysql.connector.Error as err:
         conn.rollback()
+        error = f"Database error: {err}"
+        return (success, error)
+        
+    except Exception as e:
+        conn.rollback()
+        error = f"Unexpected error: {str(e)}"
+        return (success, error)
+        
     finally:
-        cursor.close()
-        conn.close()
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
 def sell_asset(user_id, account_id, portfolio_id, asset_id, quantity):
     conn = mysql.connector.connect(**config)
     cursor = conn.cursor()
+    success = False
+    error = ""
 
     try:
-        # Get current asset quantity and price
-        cursor.execute("SELECT Quantity, MarketValue FROM Assets WHERE AssetID = %s", (asset_id,))
+        # 1. Get current asset quantity and price
+        cursor.execute("""
+            SELECT Quantity, MarketValue 
+            FROM Assets 
+            WHERE AssetID = %s
+        """, (asset_id,))
         result = cursor.fetchone()
+        
         if not result:
-            print("Asset not found.")
-            return
-
+            error = "Asset not found"
+            return (success, error)
+            
         current_qty, price = result
+
+        # 2. Validate available quantity
         if quantity > current_qty:
-            print("Not enough quantity to sell.")
-            return
+            error = f"Cannot sell {quantity} units. You only own {current_qty}"
+            return (success, error)
 
         total_earnings = price * quantity
 
-        # Add to account balance
-        cursor.execute("UPDATE BankAccount SET Balance = Balance + %s WHERE AccountID = %s", (total_earnings, account_id))
+        # 3. Add to account balance
+        cursor.execute("""
+            UPDATE BankAccount 
+            SET Balance = Balance + %s 
+            WHERE AccountID = %s
+        """, (total_earnings, account_id))
 
-        # Update Portfolio balance
-        cursor.execute("UPDATE Portfolio SET Balance = Balance - %s WHERE PortfolioID = %s", (total_earnings, portfolio_id))
+        # 4. Update Portfolio balance
+        cursor.execute("""
+            UPDATE Portfolio 
+            SET Balance = Balance - %s 
+            WHERE PortfolioID = %s
+        """, (total_earnings, portfolio_id))
 
-        # Generate new transaction ID
+        # 5. Generate transaction ID
         cursor.execute("SELECT MAX(TransactionID) FROM Transaction")
         max_tid = cursor.fetchone()[0] or 8000
         new_tid = max_tid + 1
 
-        # Insert transaction and sell record
-        cursor.execute("INSERT INTO Transaction (TransactionID, Amount, Type, PortfolioID) VALUES (%s, %s, %s, %s)",
-                       (new_tid, total_earnings, 'Sell', portfolio_id))
-        cursor.execute("INSERT INTO Sell (TransactionID, AccountID) VALUES (%s, %s)", (new_tid, account_id))
+        # 6. Create transaction records
+        cursor.execute("""
+            INSERT INTO Transaction (TransactionID, Amount, Type, PortfolioID)
+            VALUES (%s, %s, %s, %s)
+        """, (new_tid, total_earnings, 'Sell', portfolio_id))
+        
+        cursor.execute("""
+            INSERT INTO Sell (TransactionID, AccountID)
+            VALUES (%s, %s)
+        """, (new_tid, account_id))
 
-        # Update asset quantity
-        cursor.execute("UPDATE Assets SET Quantity = Quantity - %s WHERE AssetID = %s", (quantity, asset_id))
+        # 7. Update asset quantity
+        cursor.execute("""
+            UPDATE Assets 
+            SET Quantity = Quantity - %s 
+            WHERE AssetID = %s
+        """, (quantity, asset_id))
 
         conn.commit()
-        print(f"Sold {quantity} units of Asset {asset_id} for ${total_earnings:.2f}.")
+        success = True
+        return (success, error)
 
-    except Exception as e:
-        print(f"Error in selling asset: {e}")
+    except mysql.connector.Error as err:
         conn.rollback()
+        error = f"Database error: {err}"
+        return (success, error)
+        
+    except Exception as e:
+        conn.rollback()
+        error = f"Unexpected error: {str(e)}"
+        return (success, error)
+        
     finally:
-        cursor.close()
-        conn.close()
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
 def main():
     try:

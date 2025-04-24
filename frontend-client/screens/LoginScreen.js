@@ -10,6 +10,8 @@ import {
   ScrollView,
 } from 'react-native';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const phoneWidth = 393;
 const phoneHeight = 852;
@@ -17,7 +19,6 @@ const phoneHeight = 852;
 import axios, { AxiosResponse } from 'axios';
 
 async function check_login(username, password) {
-  
   console.log(username)
   console.log(password)
   
@@ -47,11 +48,20 @@ export default function LoginScreen({ navigation }) {
       return;
     }
     setLoading(true);
-
+  
     try {
-      const { isuser, isadmin } = await check_login(username, password);
+
+      const data = await check_login(username, password);
+      const { isuser, isadmin, userID } = data;
+  
       if (isuser) {
-        navigation.replace('Home');
+        // Storing username and user ID in async storage
+        await AsyncStorage.setItem('userID', data.userID.toString()); // assuming Django sends this
+        await AsyncStorage.setItem('username', username);
+        navigation.replace('Home', { 
+          userID: data.userID // Must match "route.params.userID"
+        });
+
       } else {
         Alert.alert('Login Failed', 'Invalid username or password');
       }
@@ -61,8 +71,7 @@ export default function LoginScreen({ navigation }) {
     } finally {
       setLoading(false);
     }
-
-  };
+  };  
 
   return (
     <View style={styles.phoneFrame}>
