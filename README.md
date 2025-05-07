@@ -1,4 +1,4 @@
-# CPSC-471 Term Project
+# Portfolio Management App
 
 # Requirements
 
